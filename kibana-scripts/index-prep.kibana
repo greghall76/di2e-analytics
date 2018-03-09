@@ -1,0 +1,45 @@
+DELETE metacards*
+PUT /metacards
+{
+  "settings" : {
+        "number_of_shards" : 1
+  },
+  "mappings": {
+    "metacard": {
+       "properties": {
+          "centroid": {
+            "type": "geo_point"
+          },
+          "geometry": {
+                    "type": "geo_shape",
+                    "tree": "quadtree",
+                    "precision": "1m"
+          }
+       }
+    }
+  }
+}
+POST /metacards/metacard/f13d7abd2a294405afeface0bce8dfbb?
+{ "geometry":{"coordinates":[[[-0.01,51.46],[0.01,51.46],[0.01,51.45],[-0.01,51.45],[-0.01,51.46]]],"type":"Polygon"}, "type":"Feature","properties":{"centroid": "0.01,0.1","ext.nitf.originators-phone-number":["520-538-5458"],"ext.nitf.file-security-classification":"UNCLASSIFIED","metadata":"<nitf xmlns=\"http:\/\/dcgs.mil\/metadata\" xmlns:ns2=\"http:\/\/dcgs.mil\/metadata\/ipb\">\n    <header>\n        <version>2.1<\/version>\n        <fileDateTime>2017-07-20T12:44:39.000-06:00<\/fileDateTime>\n        <fileTitle>GEO_POS_06.NTF<\/fileTitle>\n        <complexityLevel>3<\/complexityLevel>\n        <originatorName>JITC NITFS LAB<\/originatorName>\n        <originatingStationId>JITC NITFS<\/originatingStationId>\n        <security>\n            <classification>UnClass<\/classification>\n            <classificationInfo>\n                <system>US<\/system>\n            <\/classificationInfo>\n            <declassificationInfo\/>\n        <\/security>\n    <\/header>\n    <image>\n        <header>\n            <id>JITC TEST<\/id>\n            <dateTime>2017-07-20T12:40:39.000-06:00<\/dateTime>\n            <title>IM<\/title>\n            <source>JITC TEST DATA<\/source>\n            <numberOfRows>1024<\/numberOfRows>\n            <numberOfColumns>1024<\/numberOfColumns>\n            <band>\n                <numberOfBands>3<\/numberOfBands>\n                <subcategory>VISUAL<\/subcategory>\n            <\/band>\n            <bitsPerPixelPerBand>8<\/bitsPerPixelPerBand>\n            <representation>RGB<\/representation>\n            <category>VIS<\/category>\n            <mode>B<\/mode>\n            <magnification>1.0<\/magnification>\n            <compression>\n                <scheme>NC<\/scheme>\n            <\/compression>\n            <security>\n                <classification>UnClass<\/classification>\n                <classificationInfo>\n                    <system>US<\/system>\n                <\/classificationInfo>\n                <declassificationInfo\/>\n            <\/security>\n            <comment xsi:type=\"xs:string\" xmlns:xs=\"http:\/\/www.w3.org\/2001\/XMLSchema\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\">THIS TEST FILE IS UNCLASSIFIED AND CREATED FOR ANALYSIS PURPOSES ONLY.<\/comment>\n        <\/header>\n        <acftb\/>\n        <aimidb\/>\n        <piaimc\/>\n        <mtirpb>\n            <wideArea\/>\n            <aircraft\/>\n        <\/mtirpb>\n        <histoa\/>\n    <\/image>\n<\/nitf>","isr.original-source":"JITC TEST DATA","ext.nitf.image.image-source":"JITC TEST DATA","ext.nitf.image.actual-bits-per-pixel-per-band":["8"],"datetime.end":["2017-07-20T18:40:39.000+0000"],"ext.nitf.originating-station-id":["JITC NITFS"],"ext.nitf.image.file-part-type":["IM"],"media.width-pixels":"1024","metacard-type":"isr.image","ext.nitf.image.image-identifier-2":"JITC TEST DATA","ext.nitf.image.image-identifier-1":["JITC TEST"],"ext.nitf.image.image-coordinate-representation":["DECIMALDEGREES"],"ext.nitf.image.number-of-image-comments":["1"],"modified":"2017-07-20T18:44:39.000+0000","isr.organizational-unit":["JITC NITFS"],"id":"f13d7abd2a294405afeface0bce8dfbb","ext.nitf.originators-name":["JITC NITFS LAB"],"ext.nitf.file-classification-security-system":["US"],"ext.nitf.image.pixel-justification":["RIGHT"],"ext.nitf.image.image-security-classification":["UNCLASSIFIED"],"ext.nitf.image.number-of-blocks-per-column":["1"],"media.compression":"NOTCOMPRESSED","created":"2017-07-20T18:44:39.000+0000","metacard-tags":["resource","VALID"],"ext.nitf.image.number-of-blocks-per-row":["1"],"isr.comments":["THIS TEST FILE IS UNCLASSIFIED AND CREATED FOR ANALYSIS PURPOSES ONLY. "],"security.classification":"U","ext.nitf.file-date-and-time":"2017-07-20T18:44:39.000+0000","isr.image-id":"JITC TEST DATA","ext.nitf.image.image-magnification":["1.0"],"ext.nitf.image.image-display-level":["1"],"ext.nitf.complexity-level":["3"],"datetime.start":["2017-07-20T18:40:39.000+0000"],"ext.nitf.image.image-mode":["BLOCKINTERLEVE"],"isr.category":"VISUAL","ext.nitf.file-version":"2.1","security.dissemination-controls":["NF"],"ext.nitf.image.image-attachment-level":["0"],"ext.nitf.image.image-date-and-time":["2017-07-20T18:40:39.000+0000"],"ext.nitf.image.pixel-value-type":["INTEGER"],"ext.nitf.image.number-of-bands":["3"],"media.format-version":"2.1","ext.nitf.image.image-compression":"NOTCOMPRESSED","ext.nitf.file-number-of-copies":["00000"],"title":"GEO_POS_06.NTF","security.classification-system":"USA","source-id":"dib.distribution","isr.mission-id":["JITC TEST DATA"],"effective":"2017-07-20T18:40:39.000+0000","point-of-contact":"system@localhost","media.height-pixels":"1024","ext.nitf.file-title":"GEO_POS_06.NTF","ext.nitf.image.image-comment-1":["THIS TEST FILE IS UNCLASSIFIED AND CREATED FOR ANALYSIS PURPOSES ONLY."],"datatype":["Image"],"contact.creator-name":["JITC NITFS LAB"],"ext.ddms.icid-payload":"guide:\/\/999001\/04988510-3520-4672-90b5-197f98344a2b","ext.nitf.image.number-of-bits-per-pixel":["8"],"ext.nitf.file-background-color":["[0x00,0x00,0x00]"],"ext.nitf.file-profile-name":"NITF","ext.nitf.image.number-of-significant-columns-in-image":"1024","ext.nitf.image.image-representation":["RGBTRUECOLOUR"],"security.owner-producer":["USA"],"media.type":"image\/nitf","ext.nitf.standard-type":["BF01"],"contact.creator-phone":["520-538-5458"],"ext.nitf.image.number-of-significant-rows-in-image":"1024","ext.nitf.image.number-of-pixels-per-block-horizontal":["1024"],"media.encoding":["RGBTRUECOLOUR"],"metacard.created":"2018-03-06T21:47:10.969+0000","media.format":"NITF","location.country-code":["GBR"],"ext.nitf.image.image-classification-security-system":["US"],"ext.nitf.file-copy-number":["00000"],"metacard.modified":"2018-03-06T21:47:10.969+0000","ext.nitf.image.image-location":["0,0"],"ext.nitf.image.number-of-pixels-per-block-vertical":["1024"],"ext.nitf.image.image-category":"VISUAL"}}
+}
+GET /metacards/_search
+{
+    "query": {
+        "bool": {
+            "must": {
+                "match_all": {}
+            },
+            "filter": {
+                "geo_shape": {
+                    "geometry": {
+                        "shape": {
+                            "type": "envelope",
+                            "coordinates" : [[-3.0, -53.0], [4.0, 54.0]]
+                        },
+                        "relation": "intersects"
+                    }
+                }
+            }
+        }
+    }
+}
