@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (C) 2014 Cohesive Integrations, LLC (info@cohesiveintegrations.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.0.0">
+    
+    <OCD name="CDR Analytics DIB Sync Config" id="cdr-analytics-dib-sync-config">
+        
+        <AD name="Metacard Tag" id="metacardTag" required="true" type="String" default="describe"
+            description="The metacard-tag to use for the data">
+        </AD> 
+        
+        <AD name="Maximum Records Per Poll" id="maxRecordsPerPoll" required="true" type="Integer" default="1000"
+            description="The maximum number of records to request on each query">
+        </AD> 
+        
+        <AD name="Keyword Query" id="keywords" required="false" type="String" default=""
+            description="If any keywords should be used in the query">
+        </AD> 
+
+        <AD name="Start Date" id="startDate" required="true" type="String" default="2000-01-01"
+            description="The start date to use for the query">
+        </AD> 
+        
+        <AD name="Query Date Type" id="dateType" required="true" type="String" default="effective"
+            description="The date type to use for the query (e.g. effective, modified, created)">
+        </AD> 
+        
+        <AD name="Sort Date Type" id="sortDateType" required="true" type="String" default="effective"
+            description="The date type to use to sort the query results(e.g. effective, modified, created)">
+        </AD> 
+        
+        <AD name="Describe Record Classification" id="classification" required="true" type="String" default="U"
+            description="Classification for the Describe record">
+        </AD> 
+        
+        <AD name="Describe Record Owner Producer County" id="ownerProducer" required="true" type="String" default="USA" cardinality="100"
+            description="Owner/Producer Country Code for the Describe record">
+        </AD>     
+        
+        <AD name="MIME Type XPaths" id="mimeTypesXPaths" required="true" type="String" default="//*[local-name()='mimeType']" cardinality="100"
+            description="XPaths to use for getting the MIME Type values">
+        </AD> 
+        
+        <AD name="Maximum Sources to Include" id="maxSources" required="true" type="Integer" default="10"
+            description="The maximum number of sources to include in the generated describe output">
+        </AD>  
+        
+        <AD name="Source XPaths" id="sourceXPaths" required="true" type="String" default="//*[local-name()='source']" cardinality="100"
+            description="XPaths to use for getting the source values">
+        </AD> 
+        
+        <AD name="Maximum Keywords to Include" id="maxKeywords" required="true" type="Integer" default="10"
+            description="The maximum number of keywords to include in the generated describe output">
+        </AD>  
+        
+        <AD name="Maximum Category to Include" id="maxCategories" required="true" type="Integer" default="10"
+            description="The maximum number of category elements to include in the generated describe output">
+        </AD> 
+        
+        <AD name="Maximum MIME Types to Include" id="maxMimeTypes" required="true" type="Integer" default="20"
+            description="The maximum number of MIME Types to include in the generated describe output">
+        </AD> 
+        
+        <AD name="Maximum Content Types to Include" id="maxContentTypes" required="true" type="Integer" default="30"
+            description="The maximum number of DIB Content Types to include in the generated describe output">
+        </AD> 
+        
+        <AD name="Maximum DDMS Types to Include" id="maxTypes" required="true" type="Integer" default="25"
+            description="The maximum number of type elements to include in the generated describe output">
+        </AD> 
+        
+        <AD name="Maximum Security to Include" id="maxSecurity" required="true" type="Integer" default="10"
+            description="The maximum number of security elements to include in the generated describe output">
+        </AD>  
+            
+    </OCD>
+    
+    <Designate pid="cdr-analytics-dib-sync-config">
+        <Object ocdref="cdr-analytics-dib-sync-config" />
+    </Designate>
+  
+    <OCD name="CDR Analytics Elastic Sync Config" id="cdr-analytics-elastic-sync-config">
+        <AD name="Elasticsearch Server Protocol (HTTP/HTTPS)" id="host" required="true" type="String" default="http"
+            description="The protocol to access Elasticsearch">
+        </AD> 
+        <AD name="Elasticsearch Server Hostname/IP" id="host" required="true" type="String" default="localhost"
+            description="The hostname or IP of the Elasticsearch">
+        </AD> 
+        <AD name="Elasticsearch Server Port" id="port" required="true" type="Integer" default="9200"
+            description="The port for Elasticsearch sync">
+        </AD>
+    </OCD>
+    
+    <Designate pid="cdr-analytics-elastic-config">
+        <Object ocdref="cdr-analytics-elastic-config" />
+    </Designate>
+    
+</metatype:MetaData>

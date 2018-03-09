@@ -1,0 +1,99 @@
+/**
+ * Copyright (C) 2016 Pink Summit, LLC (info@pinksummit.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package net.di2e.ecdr.analytics.sync.commands;
+
+import java.io.File;
+import java.io.PrintStream;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.karaf.shell.api.action.Action;
+import org.apache.karaf.shell.api.action.Argument;
+import org.apache.karaf.shell.api.action.Command;
+import org.apache.karaf.shell.api.action.Completion;
+import org.apache.karaf.shell.api.action.Option;
+import org.apache.karaf.shell.api.action.lifecycle.Reference;
+import org.apache.karaf.shell.api.action.lifecycle.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ddf.catalog.CatalogFramework;
+import net.di2e.ecdr.analytics.sync.elastic.ElasticSync;
+
+@Command(scope = "cdr", name = "sync", description = "Synchronizes records into Elastic for analysis. "
+        + "If no options are selected it will cycle through all Sources and write the files to the " + ElasticSyncCommand.SYNC_DIR + " directory")
+@Service
+public class ElasticSyncCommand implements Action {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger( ElasticSyncCommand.class );
+    static final String SYNC_DIR = "sync";
+
+    @Argument(index = 0, name = "sourceIds", description = "The name of the Source/Site to synchronize", required = false, multiValued = true)
+    @Completion(value = net.di2e.ecdr.analytics.sync.commands.ElasticSyncCompleter.class)
+    private List<String> ids;
+
+    @Option(name = "--log", description = "Do not write the output to disk. By default they are written to $DDF_HOME/sync directory")
+    private boolean doNotWrite = false;
+
+    @Option(name = "--print", description = "Print the records to the screen")
+    private boolean print = false;
+
+    @Reference
+    private CatalogFramework framework;
+    @Reference
+    private ElasticSync elasticSync;
+
+    private PrintStream console = System.out;
+    
+    public ElasticSyncCommand() {
+    }
+
+    @Override
+    public Object execute() throws Exception {
+        
+        try {
+            elasticSync.setVerbose( print );
+            if (!doNotWrite) {
+               elasticSync.setDumpDir( new File( SYNC_DIR ) );
+            }
+            if ( CollectionUtils.isNotEmpty( ids ) ) {
+                ids.forEach( sourceId -> { 
+                    Map<String, String> syncResults = elasticSync.sync( sourceId );
+                    if (print) {
+                      for (String key:syncResults.keySet()) {
+                         console.println( key + '=' + syncResults.get( key ) );
+                      }
+                    }
+                } );
+            } else {
+               framework.getSourceIds().forEach( ( sourceId ) -> {
+                   Map<String, String> syncResults = elasticSync.sync( sourceId );
+                   if (print) {
+                       for (String key:syncResults.keySet()) {
+                          console.println( key + '=' + syncResults.get( key ) );
+                       }
+                   }
+               } );
+            }
+        } catch ( Exception e ) {
+            console.println( "Encountered error while trying to perform command. Check log for more details." );
+            LOGGER.warn( "Error while performing command.", e );
+        }
+        return null;
+    }
+
+}
