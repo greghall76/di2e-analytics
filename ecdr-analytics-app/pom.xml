@@ -20,7 +20,7 @@
 	<groupId>net.di2e.ecdr.analytics</groupId>
 	<artifactId>analytics-app</artifactId>
 	<name>Enterprise CDR :: Analytics :: App</name>
-	<packaging>kar</packaging>
+	<packaging>pom</packaging>
 
 	<build>
 		<plugins>
@@ -47,10 +47,19 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.karaf.tooling</groupId>
-				<artifactId>karaf-maven-plugin</artifactId>
-				<extensions>true</extensions>
-				<!-- There is no useful configuration for the kar mojo. The features-generate-descriptor 
-					mojo configuration may be useful -->
+				<artifactId>features-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>create-kar</id>
+						<goals>
+							<goal>create-kar</goal>
+						</goals>
+						<configuration>
+							<resourcesDir>${project.build.directory}/resources</resourcesDir>
+							<featuresFile>${basedir}/target/classes/features.xml</featuresFile>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>

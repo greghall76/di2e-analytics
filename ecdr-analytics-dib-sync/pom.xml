@@ -153,6 +153,7 @@
 							!org.jvnet.*,
 							!org.codice.ddf.platform.util,
 							!org.codice.ddf.platform.util.http,
+							templates;resolution:=optional,
 							org.osgi.framework;version="6.0",
 							com.vividsolutions.*,
 							org.joda.*,

@@ -26,10 +26,8 @@
 		<cm:managed-properties persistent-id="cdr-analytics-elastic-sync-config"
 			update-strategy="container-managed" />
 	</bean>
-	<reference id="catalogFramework" availability="mandatory"
-		interface="ddf.catalog.CatalogFramework" />
-	<reference id="filterBuilder" availability="mandatory"
-		interface="ddf.catalog.filter.FilterBuilder" />
+	<reference id="catalogFramework" availability="mandatory" interface="ddf.catalog.CatalogFramework" />
+	<reference id="filterBuilder" availability="mandatory" interface="ddf.catalog.filter.FilterBuilder" />
 	<reference id="geojsonTransformer" availability="mandatory"
 		interface="ddf.catalog.transform.MetacardTransformer" filter="(id=geojson)" />
 
