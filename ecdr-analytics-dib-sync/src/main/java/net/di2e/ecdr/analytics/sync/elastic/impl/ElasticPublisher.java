@@ -18,7 +18,6 @@ package net.di2e.ecdr.analytics.sync.elastic.impl;
 import java.io.IOException;
 
 import org.apache.http.HttpHost;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RestClient;
@@ -37,23 +36,23 @@ public class ElasticPublisher {
                 RestClient.builder(
                         new HttpHost(config.getHost(), config.getPort(), config.getProtocol())));
     }
-    
-    /**
-     * 
-     * @param name
-     */
-    public void createIndex(String name) throws IOException {
-        CreateIndexRequest createIndexRequest = new CreateIndexRequest(name);
-        //add Settings? e.g.        
-//            "settings" : {
-//                "index" : {
-//                    "number_of_shards" : 3,
-//                    "number_of_replicas" : 2
-//                }
-//            }
-        
-        client.indices().create( createIndexRequest );
-    }
+//    
+//    /**
+//     * 
+//     * @param name
+//     */
+//    public void createIndex(String name) throws IOException {
+//        CreateIndexRequest createIndexRequest = new CreateIndexRequest(name);
+//        //add Settings? e.g.        
+////            "settings" : {
+////                "index" : {
+////                    "number_of_shards" : 3,
+////                    "number_of_replicas" : 2
+////                }
+////            }
+//        ELASTIC 6.2.2 / JDK 9 thing...
+//       client.indices().create( createIndexRequest );
+//    }
     
     /**
      * 

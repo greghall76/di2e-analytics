@@ -18,10 +18,10 @@
 	<name>Enterprise CDR :: Analytics :: DIB :: Sync</name>
 	<groupId>net.di2e.ecdr.analytics</groupId>
 	<artifactId>ecdr-analytics-dib-sync</artifactId>
-	<version>1.0</version>
 	<packaging>bundle</packaging>
 
 	<properties>
+		<elasticsearch.client.version>6.1.2</elasticsearch.client.version>
 	</properties>
 
 	<dependencies>
@@ -52,9 +52,29 @@
 			<version>${ddf.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>ddf.security.handler</groupId>
+			<artifactId>security-handler-api</artifactId>
+			<version>${ddf.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
 			<version>4.4.9</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore-nio</artifactId>
+			<version>4.4.9</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpasyncclient</artifactId>
+			<version>4.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>ddf.registry.core</groupId>
@@ -68,12 +88,16 @@
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
-			<version>2.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-opengis</artifactId>
 			<version>8.4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -90,26 +114,19 @@
 			<artifactId>log4j-api</artifactId>
 			<version>2.9.1</version>
 		</dependency>
-		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch</artifactId>
-			<version>6.2.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch-core</artifactId>
-			<version>6.2.2</version>
-		</dependency>
+		<!-- <dependency> <groupId>org.apache.servicemix.bundles</groupId> <artifactId>org.apache.servicemix.bundles.elasticsearch-client</artifactId> 
+			<version>6.1.2_1</version> </dependency> -->
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-client</artifactId>
-			<version>6.2.2</version>
+			<version>${elasticsearch.client.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-high-level-client</artifactId>
-			<version>6.2.2</version>
+			<version>${elasticsearch.client.version}</version>
 		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -117,10 +134,9 @@
 			<plugin>
 				<groupId>org.apache.karaf.tooling</groupId>
 				<artifactId>karaf-services-maven-plugin</artifactId>
-				<version>${karaf.version}</version>
-				<executions>  <!-- <execution> <id>service-metadata-generate</id> <phase>process-classes</phase> 
-						<goals> <goal>service-metadata-generate</goal> </goals> </execution> -->
-				</executions>
+				<version>${maven.karaf.plugin.version}</version>
+				<!-- <executions> <execution> <id>service-metadata-generate</id> <phase>process-classes</phase> 
+					<goals> <goal>service-metadata-generate</goal> </goals> </execution> </executions> -->
 			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
@@ -133,6 +149,13 @@
 						<Embed-Transitive>true</Embed-Transitive>
 						<Embed-Dependency>
 							httpcore,
+							httpcore-nio,
+							httpclient,
+							httpasyncclient,
+							elasticsearch-core,
+							elasticsearch-rest-client,
+							elasticsearch-rest-high-level-client,
+							json-simple,
 							joda-time,
 							gt-opengis,
 							catalog-core-api,
@@ -140,13 +163,8 @@
 							platform-api,
 							platform-util,
 							ddf-security-common,
-							elasticsearch,
-							elasticsearch-core,
-							elasticsearch-rest-client,
-							elasticsearch-rest-high-level-client
+							security-handler-api
 						</Embed-Dependency>
-						<Embed-StripGroup>true</Embed-StripGroup>
-						<_failok>true</_failok>
 						<Import-Package>
 							!org.apache.logging.log4j.*,
 							!org.hisrc.w3c.*,
@@ -154,11 +172,16 @@
 							!org.codice.ddf.platform.util,
 							!org.codice.ddf.platform.util.http,
 							templates;resolution:=optional,
-							org.osgi.framework;version="6.0",
+							javax.*,
+							org.apache.karaf.*,
+							org.osgi.*,
 							com.vividsolutions.*,
+							org.apache.*,
 							org.joda.*,
+							org.json.*,
 							org.slf4j.*,
-							ddf.catalog.*
+							ddf.catalog.*,
+							ddf.security.*
 						</Import-Package>
 						<Export-Package>
 							net.di2e.ecdr.analytics.sync.commands,

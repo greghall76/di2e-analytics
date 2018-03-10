@@ -17,6 +17,7 @@ package net.di2e.ecdr.analytics.sync.elastic.impl;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Serializable;
 
@@ -39,12 +40,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 
 import ddf.catalog.CatalogFramework;
+import ddf.catalog.data.BinaryContent;
 import ddf.catalog.data.Metacard;
 import ddf.catalog.data.Result;
 import ddf.catalog.filter.FilterBuilder;
@@ -53,7 +56,6 @@ import ddf.catalog.operation.QueryResponse;
 import ddf.catalog.operation.impl.QueryImpl;
 import ddf.catalog.operation.impl.QueryRequestImpl;
 import ddf.catalog.transform.MetacardTransformer;
-import ddf.catalog.transformer.metacard.geojson.GeoJsonMetacardTransformer;
 
 import ddf.security.Subject;
 import net.di2e.ecdr.analytics.sync.dib.SyncConfiguration;
@@ -95,10 +97,12 @@ public class ElasticSyncImpl implements ElasticSync {
     private SyncConfiguration syncConfig;
     private ElasticConfiguration elasticConfig;
     private ElasticPublisher elasticPublisher;
-    private GeoJsonMetacardTransformer geoJsonTransformer;
+    private MetacardTransformer geoJsonTransformer;
     
     private Map<String, Serializable> requestProperties;
-
+    
+    private final JSONParser jsonParser = new JSONParser();
+    
     private PrintStream console = System.out;
     
     public ElasticSyncImpl( CatalogFramework fw, FilterBuilder builder, 
@@ -108,12 +112,14 @@ public class ElasticSyncImpl implements ElasticSync {
         this.filterBuilder = builder;
         this.syncConfig = config;
         this.elasticConfig = elasticConfig;
-        this.geoJsonTransformer = (GeoJsonMetacardTransformer) geoJsonTransformer;
+        this.geoJsonTransformer = geoJsonTransformer;
         
         this.requestProperties = new HashMap<>();
         this.requestProperties.put( "ddf.security.subject", this.getSystemSubject() );
         namespaceMap.put( "ddms", DDMS_NAMESPACE );
         namespaceMap.put( "ICISM", ICISM_NAMESPACE );
+        console.println( "ElasticSyncImpl is online..." );
+        LOGGER.info( "ElasticSyncImpl is online...." );
     }
 
     @Override
@@ -185,14 +191,14 @@ public class ElasticSyncImpl implements ElasticSync {
                 for ( Result result : results ) {
                     try {
                         Metacard metacard = result.getMetacard();
-                        JSONObject jsonObject = geoJsonTransformer.convertToJSON( metacard );
+                        BinaryContent binContent = geoJsonTransformer.transform( metacard, requestProperties );
+                        JSONObject jsonObject = (JSONObject) jsonParser.parse( new InputStreamReader(binContent.getInputStream()) );
                         // See about inserting a centroid for Elastic to have a simple geo_point since it's charts struggle w/ shapes
                         String wkt = metacard.getLocation();
                         if ( StringUtils.isNotBlank( wkt ) ) {
-                            
                            Geometry geometry = new WKTReader().read( wkt);
                            String center = new WKTWriter().write( geometry.getCentroid() );
-                           Map<String, Object> props = (Map<String, Object>) jsonObject.get( "properties" );
+                           Map<String, Object> props = (Map<String, Object>)  jsonObject.get( "properties" );
                            props.put( "centroid", center );
                         }
                         docCnt++;
