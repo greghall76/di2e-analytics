@@ -50,6 +50,12 @@
 			<groupId>ddf.security</groupId>
 			<artifactId>ddf-security-common</artifactId>
 			<version>${ddf.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.karaf.jaas</groupId>
+					<artifactId>org.apache.karaf.jaas.boot</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>ddf.security.handler</groupId>
@@ -84,7 +90,13 @@
 			<groupId>org.apache.karaf.shell</groupId>
 			<artifactId>org.apache.karaf.shell.console</artifactId>
 			<version>${karaf.version}</version>
-		</dependency>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.karaf.jaas</groupId>
+					<artifactId>org.apache.karaf.jaas.boot</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency> 
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
@@ -108,14 +120,36 @@
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
 			<version>3.1</version>
-		</dependency>
+		</dependency><!--
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 			<version>2.9.1</version>
 		</dependency>
-		<!-- <dependency> <groupId>org.apache.servicemix.bundles</groupId> <artifactId>org.apache.servicemix.bundles.elasticsearch-client</artifactId> 
-			<version>6.1.2_1</version> </dependency> -->
+       <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-bundle</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.santuario</groupId>
+            <artifactId>xmlsec</artifactId>
+            <version>2.0.7</version>
+        </dependency>
+        <dependency>
+           <groupId>javax.persistence</groupId>
+           <artifactId>javax.persistence-api</artifactId>
+           <version>2.2</version>
+        </dependency>
+        <dependency>
+           <groupId>javax.resource</groupId>
+           <artifactId>javax.resource-api</artifactId>
+           <version>1.7</version>
+        </dependency>
+        <dependency>
+           <groupId>javax.transaction</groupId>
+           <artifactId>javax.transaction-api</artifactId>
+           <version>1.2</version>
+        </dependency>-->
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-client</artifactId>
@@ -126,7 +160,6 @@
 			<artifactId>elasticsearch-rest-high-level-client</artifactId>
 			<version>${elasticsearch.client.version}</version>
 		</dependency>
-
 	</dependencies>
 
 	<build>
@@ -135,8 +168,13 @@
 				<groupId>org.apache.karaf.tooling</groupId>
 				<artifactId>karaf-services-maven-plugin</artifactId>
 				<version>${maven.karaf.plugin.version}</version>
-				<!-- <executions> <execution> <id>service-metadata-generate</id> <phase>process-classes</phase> 
-					<goals> <goal>service-metadata-generate</goal> </goals> </execution> </executions> -->
+				  <executions> 
+				    <execution>
+				       <id>service-metadata-generate</id> 
+				       <phase>process-classes</phase> 
+					   <goals> <goal>service-metadata-generate</goal> </goals> 
+					</execution> 
+			      </executions> 
 			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
@@ -148,13 +186,12 @@
 						<Bundle-Version>1.0</Bundle-Version>
 						<Embed-Transitive>true</Embed-Transitive>
 						<Embed-Dependency>
-							httpcore,
+					 		httpcore,
 							httpcore-nio,
 							httpclient,
-							httpasyncclient,
-							elasticsearch-core,
+							httpasyncclient, 
 							elasticsearch-rest-client,
-							elasticsearch-rest-high-level-client,
+							elasticsearch-rest-high-level-client, 
 							json-simple,
 							joda-time,
 							gt-opengis,
@@ -166,20 +203,19 @@
 							security-handler-api
 						</Embed-Dependency>
 						<Import-Package>
-							!org.apache.logging.log4j.*,
 							!org.hisrc.w3c.*,
 							!org.jvnet.*,
 							!org.codice.ddf.platform.util,
 							!org.codice.ddf.platform.util.http,
-							templates;resolution:=optional,
-							javax.*,
-							org.apache.karaf.*,
-							org.osgi.*,
 							com.vividsolutions.*,
+							javax.*,
+							org.osgi.framework;version="[1.6,2)",
 							org.apache.*,
 							org.joda.*,
 							org.json.*,
 							org.slf4j.*,
+							org.springframework.*,
+							org.xml.*,
 							ddf.catalog.*,
 							ddf.security.*
 						</Import-Package>

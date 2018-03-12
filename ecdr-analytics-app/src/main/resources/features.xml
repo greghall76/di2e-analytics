@@ -23,8 +23,8 @@
 
     <feature name="ecdr-analytics-dib-sync" install="manual" version="${project.version}"
             description="Enterprise CDR Analytics Indices Synchronization">
-    <bundle dependency="true" start-level="80">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.elasticsearch-client/jar/6.1.2_1</bundle>
-	<bundle dependency="true" start-level="80">mvn:net.di2e.ecdr.analytics/ecdr-analytics-dib-sync/${project.version}</bundle>
+      <!-- <bundle dependency="true" start-level="80">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.elasticsearch-client/jar/6.1.2_1</bundle>  -->
+	  <bundle dependency="true" start-level="80">mvn:net.di2e.ecdr.analytics/ecdr-analytics-dib-sync/${project.version}</bundle>
     </feature>
     
     <feature name="analytics-app" install="auto" version="${project.version}"

@@ -17,14 +17,12 @@
         http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd
         http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0 http://aries.apache.org/schemas/blueprint-ext/blueprint-ext.xsd">
 
-	<bean id="dibSyncConfiguration" class="net.di2e.ecdr.analytics.sync.dib.SyncConfiguration" 
-	      activation="eager">
+	<bean id="dibSyncConfiguration" class="net.di2e.ecdr.analytics.sync.dib.SyncConfiguration">
 		<cm:managed-properties persistent-id="cdr-analytics-dib-sync-config"
 			update-strategy="container-managed" />
 	</bean>
 	<bean id="elasticConfiguration"
-		class="net.di2e.ecdr.analytics.sync.elastic.ElasticConfiguration"
-		activation="eager">
+		class="net.di2e.ecdr.analytics.sync.elastic.ElasticConfiguration">
 		<cm:managed-properties persistent-id="cdr-analytics-elastic-sync-config"
 			update-strategy="container-managed" />
 	</bean>
@@ -33,7 +31,7 @@
 	<reference id="filterBuilder" availability="mandatory" interface="ddf.catalog.filter.FilterBuilder" />
 	<reference id="geojsonTransformer" availability="mandatory" interface="ddf.catalog.transform.MetacardTransformer" />
 
-	<bean id="elasticSync" class="net.di2e.ecdr.analytics.sync.elastic.impl.ElasticSyncImpl" activation="eager">
+	<bean id="elasticSync" class="net.di2e.ecdr.analytics.sync.elastic.impl.ElasticSyncImpl" >
 		<argument ref="catalogFramework" />
 		<argument ref="filterBuilder" />
 		<argument ref="dibSyncConfiguration" />
@@ -42,18 +40,5 @@
 	</bean>
 
 	<service ref="elasticSync" auto-export="interfaces" />
-    <!-- 
-    <bean id="syncCmdCompleter" class="net.di2e.ecdr.analytics.sync.commands.ElasticSyncCompleter">
-    </bean>
-            
-	<command-bundle xmlns="http://karaf.apache.org/xmlns/shell/v1.1.0">
-		<command>
-			<action class="net.di2e.ecdr.analytics.sync.commands.ElasticSyncCommand">
-				<property name="elasticSync" ref="elasticSyncSvc" />
-			</action>
-			<completers>
-                <ref component-id="syncCmdCompleter" />
-            </completers>
-		</command>
-	</command-bundle> -->
+
 </blueprint>
