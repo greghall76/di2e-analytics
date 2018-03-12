@@ -121,7 +121,7 @@
 			<artifactId>commons-httpclient</artifactId>
 			<version>3.1</version>
 		</dependency><!--
-		<dependency>
+		<dependency> DO NOT INCLUDE LOG4J crashes metadata execution 
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 			<version>2.9.1</version>
@@ -168,13 +168,15 @@
 				<groupId>org.apache.karaf.tooling</groupId>
 				<artifactId>karaf-services-maven-plugin</artifactId>
 				<version>${maven.karaf.plugin.version}</version>
-				  <executions> 
-				    <execution>
+				<executions> 
+				   <execution>
 				       <id>service-metadata-generate</id> 
 				       <phase>process-classes</phase> 
-					   <goals> <goal>service-metadata-generate</goal> </goals> 
-					</execution> 
-			      </executions> 
+					   <goals> 
+					     <goal>service-metadata-generate</goal> 
+					   </goals> 
+				   </execution>
+			    </executions> 
 			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
