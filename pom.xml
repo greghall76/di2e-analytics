@@ -77,7 +77,6 @@
         <maven.clean.plugin.version>2.5</maven.clean.plugin.version>
         <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
         <maven.features.plugin.version>2.4.3</maven.features.plugin.version>
-        <maven.karaf.plugin.version>4.1.4</maven.karaf.plugin.version>
         <maven.resources.plugin.version>2.6</maven.resources.plugin.version>
         <maven.cobertura.plugin.version>2.6</maven.cobertura.plugin.version>
         <maven.jar.plugin.version>2.4</maven.jar.plugin.version>
@@ -90,13 +89,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         
         <!--  DDF Dependency Versions -->
-        <ddf.version>2.11.0</ddf.version>
+        <ddf.version>2.11.5</ddf.version>
         <ddf.registry.version>0.1.0</ddf.registry.version>
         <joda.time.version>2.2</joda.time.version>
         <joda.convert.version>1.7</joda.convert.version>
         <geotools.version>8.4</geotools.version>
         <lucene.version>4.10.2</lucene.version>
         <karaf.version>4.1.4</karaf.version>
+        <maven.karaf.plugin.version>4.1.4</maven.karaf.plugin.version>
         <xerces.version>2.4.0</xerces.version>
     </properties>
 
@@ -110,12 +110,14 @@
         <snapshotRepository>
             <id>sonatype-nexus-snapshots</id>
             <name>Sonatype Nexus snapshot repository</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+	    <!--<url>https://oss.sonatype.org/content/repositories/snapshots</url>-->
+	    <url>file:///Users/gregoryhall/.m2/repository/</url>
         </snapshotRepository>
         <repository>
             <id>sonatype-nexus-staging</id>
             <name>Sonatype Nexus release repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+	    <url>file:///Users/gregoryhall/.m2/repository/</url>
+	    <!--<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>-->
         </repository>
     </distributionManagement>
 
@@ -254,7 +256,6 @@
                     <configuration>
                         <argLine>-Djava.awt.headless=true</argLine>
                     </configuration>
-
                 </plugin>
 
                 <plugin>
@@ -506,8 +507,6 @@
         </profile>
     </profiles>
 
-
-
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -646,12 +645,11 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        
-        <!--<repository>
-            <id>maven2-repository.dev.java.net</id>
-            <name>Java.net repository</name>
-            <url>https://download.java.net/maven/2</url>
-        </repository>-->
+        <repository>
+            <id>local.repository</id>
+            <name>Local</name>
+	    <url>file:///Users/gregoryhall/.m2/repository/</url>
+        </repository>
         <repository>
             <id>codice</id>
             <name>Codice</name>

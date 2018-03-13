@@ -10,7 +10,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
 	<parent>
 		<groupId>net.di2e.ecdr</groupId>
 		<artifactId>analytics</artifactId>
@@ -18,10 +17,16 @@
 	</parent>
 
 	<groupId>net.di2e.ecdr.analytics</groupId>
-	<artifactId>analytics-app</artifactId>
+	<artifactId>ecdr-analytics-app</artifactId>
 	<name>Enterprise CDR :: Analytics :: App</name>
-	<packaging>pom</packaging>
-
+  	<packaging>pom</packaging>
+	<dependencies>
+       <dependency>
+          <groupId>net.di2e.ecdr.analytics</groupId>
+	      <artifactId>ecdr-analytics-dib-sync</artifactId>
+	      <version>1.0</version>
+       </dependency>
+    </dependencies>
 	<build>
 		<plugins>
 			<plugin>
