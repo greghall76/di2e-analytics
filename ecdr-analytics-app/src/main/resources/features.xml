@@ -19,21 +19,18 @@
 <features name="${project.artifactId}-${project.version}"
            xmlns="http://karaf.apache.org/xmlns/features/v1.3.0" 
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	   xsi:schemaLocation="http://karaf.apache.org/xmlns/features/v1.3.0 http://karaf.apache.org/xmlns/features/v1.3.0">
+       xsi:schemaLocation="http://karaf.apache.org/xmlns/features/v1.3.0 http://karaf.apache.org/xmlns/features/v1.3.0">
 
-    <feature name="ecdr-analytics-dib-sync" install="auto" version="${project.version}"
+    <feature name="ecdr-analytics-dib-sync" install="manual" version="${project.version}"
              description="Enterprise CDR Analytics Index Synchronization">
-      <!-- <bundle dependency="true" start-level="80">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.elasticsearch-client/jar/6.1.2_1</bundle>  -->
-      <feature>cxf-rs-security-sso-saml</feature>
-      <bundle dependency="true" start-level="60">mvn:joda-time/joda-time/${joda.time.version}</bundle>
-      <bundle dependency="true" start-level="60">mvn:org.joda/joda-convert/${joda.convert.version}</bundle>
-      <bundle dependency="true" start-level="70">mvn:ddf.registry.core/registry-core-api/${ddf.registry.version}</bundle>
-      <bundle dependency="true" start-level="80">mvn:net.di2e.ecdr.analytics/ecdr-analytics-dib-sync/${project.version}</bundle>
+      <bundle>mvn:joda-time/joda-time/${joda.time.version}</bundle>
+      <bundle>mvn:org.joda/joda-convert/${joda.convert.version}</bundle>
+      <bundle>mvn:net.di2e.ecdr.analytics/ecdr-analytics-dib-sync/${project.version}</bundle>
     </feature>
     
     <feature name="ecdr-analytics-app" install="auto" version="${project.version}"
              description="Enterprise CDR Analytics provides metadata analytics against the federated catalog.">
-        <feature prerequisite="true" dependency="true">ecdr-analytics-dib-sync</feature>
+        <feature>ecdr-analytics-dib-sync</feature>
     </feature>
 
 </features>
