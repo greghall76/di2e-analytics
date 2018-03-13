@@ -18,12 +18,12 @@
         http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0 http://aries.apache.org/schemas/blueprint-ext/blueprint-ext.xsd">
 
    <bean id="dibSyncConfiguration" class="net.di2e.ecdr.analytics.sync.dib.SyncConfiguration">
-      <cm:managed-properties persistent-id="cdr-analytics-dib-sync-config"
+      <cm:managed-properties persistent-id="cdr-analytics.dib.sync.config"
          update-strategy="container-managed" />
    </bean>
    <bean id="elasticConfiguration"
       class="net.di2e.ecdr.analytics.sync.elastic.ElasticConfiguration">
-      <cm:managed-properties persistent-id="cdr-analytics-elastic-config"
+      <cm:managed-properties persistent-id="cdr-analytics.elastic.config"
          update-strategy="container-managed" />
    </bean>
    

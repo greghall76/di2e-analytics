@@ -18,8 +18,8 @@
 -->
 <metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.0.0">
 
-    <OCD name="CDR Analytics Elastic Sync Config" id="cdr-analytics-elastic-config">
-        <AD name="Elasticsearch Server Protocol (HTTP/HTTPS)" id="host" required="true" type="String" default="http"
+    <OCD name="CDR Analytics Elastic Sync Config" id="cdr-analytics.elastic.config">
+        <AD name="Elasticsearch Server Protocol (HTTP/HTTPS)" id="protocol" required="true" type="String" default="http"
             description="The protocol to access Elasticsearch">
         </AD> 
         <AD name="Elasticsearch Server Hostname/IP" id="host" required="true" type="String" default="localhost"
@@ -30,7 +30,7 @@
         </AD>
     </OCD>
     
-    <OCD name="CDR Analytics DIB Sync Config" id="cdr-analytics-dib-sync-config">
+    <OCD name="CDR Analytics DIB Sync Config" id="cdr-analytics.dib.sync.config">
         
         <AD name="Metacard Tag" id="metacardTag" required="true" type="String" default="describe"
             description="The metacard-tag to use for the data">
@@ -103,12 +103,12 @@
     </OCD>
     
 
-    <Designate pid="cdr-analytics-dib-sync-config">
-        <Object ocdref="cdr-analytics-dib-sync-config" />
+    <Designate pid="cdr-analytics.dib.sync.config">
+        <Object ocdref="cdr-analytics.dib.sync.config" />
     </Designate>
     
-    <Designate pid="cdr-analytics-elastic-config">
-        <Object ocdref="cdr-analytics-elastic-config" />
+    <Designate pid="cdr-analytics.elastic.config">
+        <Object ocdref="cdr-analytics.elastic.config" />
     </Designate>
     
 </metatype:MetaData>
