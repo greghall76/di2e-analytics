@@ -27,9 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-
 import org.apache.commons.lang.StringUtils;
 import org.codice.ddf.security.common.Security;
 import org.joda.time.format.DateTimeFormatter;
@@ -101,7 +98,6 @@ public class ElasticSyncImpl implements ElasticSync {
     private ElasticConfiguration elasticConfig;
     private ElasticPublisher elasticPublisher;
     private MetacardTransformer geoJsonTransformer;
-    private DatatypeFactory dtf;
      
     private Map<String, Serializable> requestProperties;
     
@@ -118,14 +114,8 @@ public class ElasticSyncImpl implements ElasticSync {
         this.elasticConfig = elasticConfig;
         this.geoJsonTransformer = geoJsonTransformer;
 
-        try {
-            dtf = DatatypeFactory.newInstance();
-        } catch ( DatatypeConfigurationException e ) {
-            LOGGER.error( e.getMessage(), e );
-        }
-
         this.requestProperties = new HashMap<>();
-        this.requestProperties.put( "ddf.security.subject", this.getSystemSubject() );
+        this.requestProperties.put( "ddf.security.subject", getSystemSubject() );
         namespaceMap.put( "ddms", DDMS_NAMESPACE );
         namespaceMap.put( "ICISM", ICISM_NAMESPACE );
         console.println( "ElasticSyncImpl is online..." );

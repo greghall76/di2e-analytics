@@ -211,36 +211,17 @@
                      httpasyncclient, 
                      elasticsearch-rest-client,
                      elasticsearch-rest-high-level-client, 
-                     json-simple,
-                     gt-opengis,
-                     catalog-core-api,
                      catalog-core-api-impl,
                      platform-api,
-		             platform-util,
-		             ddf-security-common,
-		             security-handler-api
+	             platform-util,
+	             ddf-security-common
                   </Embed-Dependency>
                   <Import-Package>
                      !org.hisrc.w3c.*,
                      !org.jvnet.*,
                      !org.codice.ddf.platform.util,
                      !org.codice.ddf.platform.util.http,
-                     com.vividsolutions.*,
-                     javax.*,
-                     org.codice.*,
-                     org.osgi.framework,
-                     org.osgi.service.blueprint.*,
-                     org.osgi.service.event,
-                     org.apache.*,
-                     org.apache.ws.security.*,
-                     org.apache.wss4j.*,
-                     org.joda.*,
-                     org.json.*,
-                     org.slf4j.*,
-                     org.springframework.*,
-                     org.xml.*,
-                     ddf.catalog.*,
-                     ddf.security.*
+                     *;resolution:=optional
                   </Import-Package>
                   <Export-Package>
                      net.di2e.ecdr.analytics.sync.commands,
