@@ -23,7 +23,7 @@
    </bean>
    <bean id="elasticConfiguration"
       class="net.di2e.ecdr.analytics.sync.elastic.ElasticConfiguration">
-      <cm:managed-properties persistent-id="cdr-analytics-elastic-sync-config"
+      <cm:managed-properties persistent-id="cdr-analytics-elastic-config"
          update-strategy="container-managed" />
    </bean>
    

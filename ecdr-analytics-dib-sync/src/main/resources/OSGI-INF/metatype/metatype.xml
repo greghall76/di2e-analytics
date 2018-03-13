@@ -17,6 +17,18 @@
 
 -->
 <metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.0.0">
+
+    <OCD name="CDR Analytics Elastic Sync Config" id="cdr-analytics-elastic-config">
+        <AD name="Elasticsearch Server Protocol (HTTP/HTTPS)" id="host" required="true" type="String" default="http"
+            description="The protocol to access Elasticsearch">
+        </AD> 
+        <AD name="Elasticsearch Server Hostname/IP" id="host" required="true" type="String" default="localhost"
+            description="The hostname or IP of the Elasticsearch">
+        </AD> 
+        <AD name="Elasticsearch Server Port" id="port" required="true" type="Integer" default="9200"
+            description="The port for Elasticsearch sync">
+        </AD>
+    </OCD>
     
     <OCD name="CDR Analytics DIB Sync Config" id="cdr-analytics-dib-sync-config">
         
@@ -90,21 +102,10 @@
             
     </OCD>
     
+
     <Designate pid="cdr-analytics-dib-sync-config">
         <Object ocdref="cdr-analytics-dib-sync-config" />
     </Designate>
-  
-    <OCD name="CDR Analytics Elastic Sync Config" id="cdr-analytics-elastic-sync-config">
-        <AD name="Elasticsearch Server Protocol (HTTP/HTTPS)" id="host" required="true" type="String" default="http"
-            description="The protocol to access Elasticsearch">
-        </AD> 
-        <AD name="Elasticsearch Server Hostname/IP" id="host" required="true" type="String" default="localhost"
-            description="The hostname or IP of the Elasticsearch">
-        </AD> 
-        <AD name="Elasticsearch Server Port" id="port" required="true" type="Integer" default="9200"
-            description="The port for Elasticsearch sync">
-        </AD>
-    </OCD>
     
     <Designate pid="cdr-analytics-elastic-config">
         <Object ocdref="cdr-analytics-elastic-config" />
