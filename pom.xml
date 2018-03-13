@@ -90,6 +90,8 @@
         
         <!--  DDF Dependency Versions -->
         <ddf.version>2.11.5</ddf.version>
+        <apache.cxf.version>2.7.18</apache.cxf.version>
+        <apache.cxf.rt.rs.version>3.1.11</apache.cxf.rt.rs.version>
         <ddf.registry.version>0.1.0</ddf.registry.version>
         <joda.time.version>2.2</joda.time.version>
         <joda.convert.version>1.7</joda.convert.version>
@@ -105,22 +107,20 @@
         <connection>scm:git:git://github.com/di2e/ecdr.git</connection>
         <developerConnection>scm:git:git://github.com/di2e/ecdr.git</developerConnection>
     </scm>
-
+  <!--
     <distributionManagement>
         <snapshotRepository>
             <id>sonatype-nexus-snapshots</id>
             <name>Sonatype Nexus snapshot repository</name>
-	    <!--<url>https://oss.sonatype.org/content/repositories/snapshots</url>-->
-	    <url>file:///Users/gregoryhall/.m2/repository/</url>
+	       <url>https://oss.sonatype.org/content/repositories/snapshots</url> 
         </snapshotRepository>
         <repository>
             <id>sonatype-nexus-staging</id>
             <name>Sonatype Nexus release repository</name>
-	    <url>file:///Users/gregoryhall/.m2/repository/</url>
-	    <!--<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>-->
+	       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url> 
         </repository>
     </distributionManagement>
-
+  -->
     <build>
         <pluginManagement>
             <plugins>
@@ -543,11 +543,37 @@
                 <groupId>ddf.registry.core</groupId>
                 <artifactId>registry-core-api</artifactId>
                 <version>${ddf.registry.version}</version>
-            </dependency>
+    	    </dependency>
+			<dependency>
+				<groupId>ddf.security</groupId>
+				<artifactId>ddf-security-common</artifactId>
+				<version>${ddf.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.apache.karaf.jaas</groupId>
+						<artifactId>org.apache.karaf.jaas.boot</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.apache.santuario</groupId>
+						<artifactId>xmlsec</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+    	    <!--
+    	    <dependency>
+    	       <groupId>ddf.security.core</groupId>
+               <artifactId>security-core-impl</artifactId>
+               <version>${ddf.registry.version}</version>
+            </dependency> -->
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-rs-client</artifactId>
+                <version>${apache.cxf.rt.rs.version}</version>
+	        </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-bundle</artifactId>
-                <version>2.7.8</version>
+                <version>${apache.cxf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hazelcast</groupId>
@@ -630,12 +656,7 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-        </repository>
-        <repository>
-            <id>osgeo</id>
-            <name>Open Source Geospatial Foundation Repository</name>
-            <url>http://download.osgeo.org/webdav/geotools/</url>
-        </repository>
+	</repository>
         <repository>
             <id>central</id>
             <name>Central Repository</name>
@@ -646,17 +667,22 @@
             </snapshots>
         </repository>
         <repository>
-            <id>local.repository</id>
-            <name>Local</name>
-	    <url>file:///Users/gregoryhall/.m2/repository/</url>
-        </repository>
-        <repository>
             <id>codice</id>
             <name>Codice</name>
             <url>http://artifacts.codice.org/content/groups/public/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
+        </repository>
+        <repository>
+            <id>osgeo</id>
+            <name>Open Source Geospatial Foundation Repository</name>
+            <url>http://download.osgeo.org/webdav/geotools/</url>
+        </repository>
+        <repository>
+            <id>local.repository</id>
+            <name>Local</name>
+            <url>file:///Users/gregoryhall/.m2/repository/</url>
         </repository>
     </repositories>
     <pluginRepositories>
@@ -668,7 +694,7 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-        </pluginRepository>
+	</pluginRepository>
         <pluginRepository>
             <id>central</id>
             <name>Central Repository</name>
