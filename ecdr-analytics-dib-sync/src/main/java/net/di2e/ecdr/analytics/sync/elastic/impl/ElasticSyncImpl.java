@@ -17,6 +17,7 @@ package net.di2e.ecdr.analytics.sync.elastic.impl;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -65,13 +66,12 @@ import net.di2e.ecdr.analytics.sync.elastic.ElasticSync;
 public class ElasticSyncImpl implements ElasticSync {
 
     private static final String METACARDS_IDX = "metacards";
-    private static final String METACARD_TYPE = "metacard";
     
     private static DateTimeFormatter formatter;
 
     static {
         DateTimeParser[] parsers = { ISODateTimeFormat.date().getParser(), ISODateTimeFormat.dateTime().getParser(), ISODateTimeFormat.dateTimeNoMillis().getParser(),
-                ISODateTimeFormat.basicDateTime().getParser(), ISODateTimeFormat.basicDateTimeNoMillis().getParser() };
+                                     ISODateTimeFormat.basicDateTime().getParser(), ISODateTimeFormat.basicDateTimeNoMillis().getParser() };
         formatter = new DateTimeFormatterBuilder().append( null, parsers ).toFormatter();
     }
 
@@ -118,35 +118,51 @@ public class ElasticSyncImpl implements ElasticSync {
         this.requestProperties.put( "ddf.security.subject", getSystemSubject() );
         namespaceMap.put( "ddms", DDMS_NAMESPACE );
         namespaceMap.put( "ICISM", ICISM_NAMESPACE );
-        console.println( "ElasticSyncImpl is online..." );
         LOGGER.info( "ElasticSyncImpl is online...." );
     }
 
     @Override
-    public void setVerbose( boolean aVerbose ) {
-      this.verbose = aVerbose;
+    public void setVerbose( boolean verbose ) {
+      this.verbose = verbose;
     }
 
     @Override
-    public void setDumpDir( File aDumpDir ) {
-      this.dumpDir = aDumpDir;   
+    public void setDumpDir( File dumpDir ) {
+      this.dumpDir = dumpDir;   
     }
 
     @Override
     public Map<String, String> sync( String sourceId ) {
-        console.println( "Generating record for " + sourceId );
+        long beginMs = System.currentTimeMillis();
         HashMap<String, String> resultProperties = new HashMap<>();
         syncRecords( sourceId, resultProperties );
+        try {
+            elasticPublisher.flushBulkRequest( METACARDS_IDX );
+        } catch (IOException ioE) {
+            LOGGER.error( "IOException syncing records to Elasticsearch=>" + ioE );
+        } finally {
+            long delta = System.currentTimeMillis() - beginMs;
+            resultProperties.put( "elastic.sync.queue.time.ms", String.valueOf( delta ) );
+          }
         return resultProperties;
     }
 
     @Override
     public Map<String, String> syncAll() {
+        long beginMs = System.currentTimeMillis();
         HashMap<String, String> resultProperties = new HashMap<>();
         framework.getSourceIds().forEach( ( sourceId ) -> {
-            LOGGER.debug( "Creating Describe record for sourceId {}", sourceId );
             syncRecords( sourceId, resultProperties );
         } );
+     
+        try {
+          elasticPublisher.flushBulkRequest( METACARDS_IDX );
+        } catch (IOException ioE) {
+          LOGGER.error( "IOException syncing records to Elasticsearch=>" + ioE );
+        } finally {
+          long delta = System.currentTimeMillis() - beginMs;
+          resultProperties.put( "elastic.sync.queue.time.ms", String.valueOf( delta ) );
+        }
         return resultProperties;
     }
 
@@ -156,35 +172,38 @@ public class ElasticSyncImpl implements ElasticSync {
      * @param resultProperties
      */
     protected void syncRecords( String sourceId, Map<String, String> resultProperties ) {
-       
+        
+        console.println( "Elastic sync source: " + sourceId );
+        
         boolean hasMoreRecords = true;
-        if (elasticPublisher == null) {
-            this.elasticPublisher = new ElasticPublisher(elasticConfig);
-        }
-        Date startDate = StringUtils.isBlank( syncConfig.getStartDate() ) ? null : formatter.parseDateTime( syncConfig.getStartDate() ).toDate();
+
+        Date startDate = StringUtils.isBlank( syncConfig.getStartDate() ) ? null 
+                                              : formatter.parseDateTime( syncConfig.getStartDate() ).toDate();
         Date endDate = new Date();
         String queryKeywords = syncConfig.getKeywords();
         int maxRecordCount = syncConfig.getMaxRecordsPerPoll();
         int docCnt = 0;
         long deltaTime = 0;
         
-        FileOutputStream fos = null;
         try {
+            if (elasticPublisher == null) {
+                this.elasticPublisher = new ElasticPublisher(elasticConfig);
+            }
             if ( dumpDir != null ) {
                 if ( !dumpDir.exists() ) {
                    dumpDir.mkdirs();
                 }
-                fos = new FileOutputStream(dumpDir);
             }
             while ( hasMoreRecords ) {
                 long beginTime = System.currentTimeMillis();
                 QueryImpl query = new QueryImpl( getFilter( startDate, endDate, queryKeywords ), 1, maxRecordCount, getSortBy(), true, 300000L );
                 QueryRequestImpl queryRequest = new QueryRequestImpl( query, Arrays.asList( new String[] { sourceId } ) );
                 queryRequest.setProperties( this.requestProperties );
-                QueryResponse response = this.framework.query( queryRequest );
+                QueryResponse response = framework.query( queryRequest );
 
                 List<Result> results = response.getResults();
                 hasMoreRecords = (results.size() == maxRecordCount) && startDate != null;
+                console.printf( "Adding details from query results for %d records from site %s", Integer.valueOf( results.size() ), sourceId );
                 LOGGER.debug( "Adding details from query results for {} records from site {} in the Content Collection date range [{} - {}] and keywords[{}]",
                                Integer.valueOf( results.size() ), sourceId, startDate, endDate, queryKeywords );
 
@@ -203,25 +222,30 @@ public class ElasticSyncImpl implements ElasticSync {
                         }
                         docCnt++;
                         // Publish doc... ? optimize bundling of multiple docs ?
-                        elasticPublisher.sendBundleRequest(METACARDS_IDX, METACARD_TYPE, metacard.getId(), jsonObject);
+                        elasticPublisher.queueBundleRequest( METACARDS_IDX, metacard.getId(), jsonObject);
                         deltaTime += System.currentTimeMillis() - beginTime;
                         if (verbose) {
-                            console.println("Sent:" + jsonObject.toJSONString());
+                            console.println("Queued:" + jsonObject.toJSONString());
                         }
                         if (dumpDir != null) {
+                            FileOutputStream fos = new FileOutputStream(new File(dumpDir, '/' + metacard.getId() + ".json"));
                             fos.write(jsonObject.toJSONString().getBytes());
+                            fos.close();
                         }
                             
                     } catch ( Exception e ) {
                         LOGGER.error( "Error handling result {} ", result.getMetacard().getId(), e );
+                        console.printf( "Error handling result {} with Exception {} ", result.getMetacard().getId(), e.getLocalizedMessage() );
                     }
                 }
             }
-        } catch ( Exception arg34 ) {
+        } catch ( Throwable arg34 ) {
             LOGGER.warn( "Query failed against source {}", sourceId, arg34 );
         } finally {
-            resultProperties.put( "elastic.doc.sync.count",  String.valueOf( docCnt ) );
-            resultProperties.put( "elastic.doc.sync.time.ms", String.valueOf(deltaTime) );
+            LOGGER.info( "Synchronized:" + docCnt + " records in " + String.valueOf(((double) deltaTime) / 1000.0) + "(s)");
+            console.println( "Synchronized:" + docCnt + " records in " + String.valueOf(((double) deltaTime) / 1000.0) + "(s)");
+            resultProperties.put( "elastic.doc.queue.count",  String.valueOf( docCnt ) );
+            resultProperties.put( "elastic.doc.queue.time.ms", String.valueOf( deltaTime ) );
         }
     }
 

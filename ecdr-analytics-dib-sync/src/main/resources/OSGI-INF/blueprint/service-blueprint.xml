@@ -29,7 +29,7 @@
    
    <reference id="catalogFramework" availability="mandatory" interface="ddf.catalog.CatalogFramework" />
    <reference id="filterBuilder" availability="mandatory" interface="ddf.catalog.filter.FilterBuilder" />
-   <reference id="geojsonTransformer" availability="mandatory" interface="ddf.catalog.transform.MetacardTransformer" />
+   <reference id="geojsonTransformer" availability="mandatory" interface="ddf.catalog.transform.MetacardTransformer" filter="(id=geojson)"/>
 
    <bean id="elasticSync" class="net.di2e.ecdr.analytics.sync.elastic.impl.ElasticSyncImpl" >
       <argument ref="catalogFramework" />

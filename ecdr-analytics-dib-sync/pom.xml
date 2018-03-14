@@ -21,7 +21,7 @@
    <packaging>bundle</packaging>
 
    <properties>
-      <elasticsearch.client.version>6.1.2</elasticsearch.client.version>
+      <jest.client.version>5.3.3</jest.client.version>
    </properties>
 
    <dependencies>
@@ -107,49 +107,34 @@
          <version>1.1.1</version>
       </dependency>
       <dependency>
-         <groupId>commons-io</groupId>
-         <artifactId>commons-io</artifactId>
-         <version>2.6</version>
+         <groupId>com.google.code.gson</groupId>
+         <artifactId>gson</artifactId>
+         <version>2.8.2</version>
       </dependency>
       <dependency>
-         <groupId>commons-net</groupId>
-         <artifactId>commons-net</artifactId>
-         <version>3.3</version>
-      </dependency>
-      <dependency>
-         <groupId>commons-httpclient</groupId>
-         <artifactId>commons-httpclient</artifactId>
-         <version>3.1</version>
-      </dependency><!--
-      <dependency> DO NOT INCLUDE LOG4J crashes metadata execution 
-         <groupId>org.apache.logging.log4j</groupId>
-         <artifactId>log4j-api</artifactId>
-         <version>2.9.1</version>
-      </dependency> -->
-     <dependency>
          <groupId>org.apache.cxf</groupId>
-        <artifactId>cxf-rt-rs-client</artifactId>
-        <scope>provided</scope>
-      <exclusions>
-          <exclusion>
+         <artifactId>cxf-rt-rs-client</artifactId>
+         <scope>provided</scope>
+         <exclusions>
+           <exclusion>
              <artifactId>servlet-api</artifactId>
              <groupId>javax.servlet</groupId>
-          </exclusion>
-          <exclusion>
+           </exclusion>
+           <exclusion>
              <groupId>org.apache.santuario</groupId>
              <artifactId>xmlsec</artifactId>
-          </exclusion>
-        </exclusions>
+           </exclusion>
+         </exclusions>
+       </dependency>
+      <dependency>
+         <groupId>io.searchbox</groupId>
+         <artifactId>jest</artifactId>
+	 <version>${jest.client.version}</version>
       </dependency>
       <dependency>
-         <groupId>org.elasticsearch.client</groupId>
-         <artifactId>elasticsearch-rest-client</artifactId>
-         <version>${elasticsearch.client.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.elasticsearch.client</groupId>
-         <artifactId>elasticsearch-rest-high-level-client</artifactId>
-         <version>${elasticsearch.client.version}</version>
+         <groupId>io.searchbox</groupId>
+         <artifactId>jest-common</artifactId>
+	 <version>${jest.client.version}</version>
       </dependency>
    </dependencies>
 
@@ -183,9 +168,10 @@
                      httpcore,
                      httpcore-nio,
                      httpclient,
-                     httpasyncclient, 
-                     elasticsearch-rest-client,
-                     elasticsearch-rest-high-level-client, 
+                     httpasyncclient,
+                     gson,
+                     jest,
+                     jest-common,
                      catalog-core-api-impl,
                      platform-api,
                      platform-util,

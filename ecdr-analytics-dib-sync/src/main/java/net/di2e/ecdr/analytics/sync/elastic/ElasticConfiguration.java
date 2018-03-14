@@ -19,28 +19,57 @@ public class ElasticConfiguration {
     private String  protocol;
     private String  host;
     private Integer port;
-   
+    private Integer concurrencyPerRoute;
+    private Integer maxConcurrency;
+    private Integer maxBulkIndexingRequests;
+    
     public String getProtocol() {
         return protocol;
     }
 
-    public void setProtocol( String aProtocol ) {
-        this.protocol = aProtocol;
+    public void setProtocol( String protocol ) {
+        this.protocol = protocol;
     }
 
     public String getHost() {
         return host;
     }
 
-    public void setHost( String aHost ) {
-        this.host = aHost;
+    public void setHost( String host ) {
+        this.host = host;
     }
 
     public Integer getPort() {
         return port;
     }
 
-    public void setPort( Integer aPort ) {
-        this.port = aPort;
+    public void setPort( Integer port ) {
+        this.port = port;
     }
+
+    public Integer getConcurrencyPerRoute() {
+        return concurrencyPerRoute;
+    }
+
+    public void setConcurrencyPerRoute( Integer concurrencyPerRoute ) {
+        this.concurrencyPerRoute = concurrencyPerRoute;
+    }
+
+    public Integer getMaxConcurrency() {
+        return maxConcurrency;
+    }
+
+    public void setMaxConcurrency( Integer maxConcurrency ) {
+        this.maxConcurrency = maxConcurrency;
+    }
+
+    public Integer getMaxBulkIndexingRequests() {
+        return maxBulkIndexingRequests;
+    }
+
+    public void setMaxBulkIndexingRequests( Integer maxBulkIndexingRequests ) {
+        this.maxBulkIndexingRequests = maxBulkIndexingRequests;
+    }
+    
+    
 }
