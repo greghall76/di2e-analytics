@@ -114,7 +114,7 @@
         <!-- See http://checkstyle.sf.net/config_naming.html -->
         <module name="ConstantName"/>
         <module name="LocalFinalVariableName"/> 
-        <module name="LocalVariableName"/>
+	<module name="LocalVariableName"/> 
         <module name="MemberName"/>
         <module name="MethodName"/>
         <module name="PackageName"/>
@@ -182,6 +182,7 @@
         <module name="EqualsHashCode"/>
         <module name="HiddenField">
 		<property name="ignoreConstructorParameter" value="true"/>
+		<property name="ignoreSetter" value="true"/>
 	</module>
         <module name="IllegalInstantiation"/>
         <module name="InnerAssignment"/>
