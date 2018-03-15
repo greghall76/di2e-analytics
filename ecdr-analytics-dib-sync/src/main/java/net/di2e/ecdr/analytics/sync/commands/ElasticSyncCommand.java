@@ -35,7 +35,7 @@ import ddf.catalog.CatalogFramework;
 import net.di2e.ecdr.analytics.sync.elastic.ElasticSync;
 
 @Command(scope = "cdr", name = "sync", description = "Synchronizes records into Elastic for analysis. "
-        + "If no options are selected it will cycle through all Sources and write the files to the " + ElasticSyncCommand.SYNC_DIR + " directory")
+        + "Synchronizes metacards to an Elasticsearch index based on a configurable DDF query and Elasticsearch connection.")
 @Service
 public class ElasticSyncCommand implements Action {
 
@@ -46,8 +46,8 @@ public class ElasticSyncCommand implements Action {
     @Completion(value = net.di2e.ecdr.analytics.sync.commands.ElasticSyncCompleter.class)
     private List<String> ids;
 
-    @Option(name = "--log", description = "Do not write the output to disk. By default they are written to $DDF_HOME/sync directory")
-    private boolean doNotWrite = false;
+    @Option(name = "--log", description = "Logs metacards to disk under the $DDF_HOME/sync directory")
+    private boolean log = false;
 
     @Option(name = "--print", description = "Print the records to the screen")
     private boolean print = false;
@@ -67,7 +67,7 @@ public class ElasticSyncCommand implements Action {
         
         try {
             elasticSync.setVerbose( print );
-            if (!doNotWrite) {
+            if (log) {
                elasticSync.setDumpDir( new File( SYNC_DIR ) );
             }
             if ( CollectionUtils.isNotEmpty( ids ) ) {
