@@ -107,7 +107,7 @@ public class ElasticPublisher {
     private static final String METACARD_MAPPING = 
         "\"" + METACARD_TYPE + "\": {"
           + "\"properties\": {"
-          +    "\"centroid\": {"
+          +    "\"properties.centroid\": {"
           +      "\"type\": \"geo_point\""
           +    "},"
           +    "\"geometry\": {"
