@@ -52,6 +52,9 @@ public class ElasticSyncCommand implements Action {
     @Option(name = "--log", description = "Logs metacards to disk under the $DDF_HOME/sync directory")
     private boolean log = false;
 
+    @Option(name = "--dryrun", description = "Tests the DDF query and prints or logs records as specified in other args. Connects to Elasticsearch without indexing records.")
+    private boolean dryRun = false;
+    
     @Option(name = "--verbose", description = "Provide verbose output on transferred records to the screen")
     private boolean verbose = false;
 
@@ -75,14 +78,14 @@ public class ElasticSyncCommand implements Action {
             }
             if ( CollectionUtils.isNotEmpty( ids ) ) {
                 ids.forEach( sourceId -> { 
-                    Map<String, String> syncResults = elasticSync.sync( sourceId, index );
+                    Map<String, String> syncResults = elasticSync.sync( sourceId, index, dryRun );
                     for (String key:syncResults.keySet()) {
                        console.println( key + '=' + syncResults.get( key ) );
                     }
                 } );
             } else {
                framework.getSourceIds().forEach( ( sourceId ) -> {
-                   Map<String, String> syncResults = elasticSync.sync( sourceId, index );
+                   Map<String, String> syncResults = elasticSync.sync( sourceId, index, dryRun );
                    for (String key:syncResults.keySet()) {
                       console.println( key + '=' + syncResults.get( key ) );
                    }

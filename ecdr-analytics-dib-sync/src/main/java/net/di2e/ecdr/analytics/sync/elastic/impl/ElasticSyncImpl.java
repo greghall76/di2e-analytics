@@ -169,12 +169,14 @@ public class ElasticSyncImpl implements ElasticSync {
     }
     
     @Override
-    public Map<String, String> sync( String sourceId, String targetIndex ) {
+    public Map<String, String> sync( String sourceId, String targetIndex, boolean dryRun ) {
         long beginMs = System.currentTimeMillis();
         HashMap<String, String> resultProperties = new HashMap<>();
-        syncRecords( sourceId, targetIndex, resultProperties );
+        syncRecords( sourceId, targetIndex, resultProperties, dryRun );
         try {
-            elasticPublisher.flushBulkRequest( targetIndex );
+            if (!dryRun) {
+              elasticPublisher.flushBulkRequest( targetIndex );
+            }
         } catch (IOException ioE) {
             LOGGER.error( "IOException syncing records to Elasticsearch=>" + ioE );
         } finally {
@@ -185,15 +187,17 @@ public class ElasticSyncImpl implements ElasticSync {
     }
 
     @Override
-    public Map<String, String> syncAll(String targetIndex) {
+    public Map<String, String> syncAll(String targetIndex, boolean dryRun) {
         long beginMs = System.currentTimeMillis();
         HashMap<String, String> resultProperties = new HashMap<>();
         framework.getSourceIds().forEach( ( sourceId ) -> {
-            syncRecords( sourceId, targetIndex, resultProperties );
+            syncRecords( sourceId, targetIndex, resultProperties, dryRun );
         } );
      
         try {
-          elasticPublisher.flushBulkRequest( targetIndex );
+          if (!dryRun) {
+            elasticPublisher.flushBulkRequest( targetIndex );
+          }
         } catch (IOException ioE) {
           LOGGER.error( "IOException syncing records to Elasticsearch=>" + ioE );
         } finally {
@@ -208,7 +212,7 @@ public class ElasticSyncImpl implements ElasticSync {
      * @param sourceId
      * @param resultProperties
      */
-    protected void syncRecords( String sourceId, String index, Map<String, String> resultProperties ) {
+    protected void syncRecords( String sourceId, String index, Map<String, String> resultProperties, boolean dryRun ) {
         
         console.println( "Querying sync source: " + sourceId );
         
@@ -258,8 +262,9 @@ public class ElasticSyncImpl implements ElasticSync {
                            props.put( "centroid", center );
                         }
                         docCnt++;
-                        // Publish doc... ? optimize bundling of multiple docs ?
-                        elasticPublisher.queueBundleRequest( index, metacard.getId(), jsonObject);
+                        if (!dryRun) {
+                          elasticPublisher.queueBundleRequest( index, metacard.getId(), jsonObject);
+                        }
                         deltaTime += System.currentTimeMillis() - beginTime;
                         if (verbose) {
                             console.println("Queued:" + jsonObject.toJSONString());

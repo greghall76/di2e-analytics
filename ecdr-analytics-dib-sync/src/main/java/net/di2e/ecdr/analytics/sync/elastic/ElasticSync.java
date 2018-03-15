@@ -20,15 +20,47 @@ import java.util.Map;
 
 public interface ElasticSync {
     
+    /**
+     * If verbose, Json formatted documents to be pushed to Elasticsearch are echoed to the console.
+     * @param verbose
+     */
     void setVerbose(boolean verbose);
     
+    /**
+     * If set, the sync process will dump Json formatted records to $DDF_HOME/sync using the format they 
+     * are sent to Elasticsearch in. ( which adds a centroid in addition to the GeoJson geometry because geo_points are required for the coordinate map.
+     * @param dumpDir
+     */
     void setDumpDir(File dumpDir);
 
+    /**
+     * Creates the named index in Elasticsearch as well as a geospatially coherent mapping with type name "metacard"
+     * @param idx
+     * @return
+     */
     int createIndex(String idx);
     
+    /**
+     * Deletes the named index in Elasticsearch
+     * @param idx
+     * @return
+     */
     int deleteIndex(String idx);
     
-    Map<String, String> sync( String sourceId, String targetIndex );
+    /**
+     * Synchronize the specified DDF source. Configuration of the DDF Query is handled through config pages.
+     * @param sourceId
+     * @param targetIndex - index in Elasticsearch to post documents into
+     * @param dryRun - if true, connect to Elasticsearch but don't index and documents.
+     * @return
+     */
+    Map<String, String> sync( String sourceId, String targetIndex, boolean dryRun );
     
-    Map<String, String> syncAll(String targetIndex);
+    /**
+     * Synchronize all DDF sources to the specified ElasticSearch index. Configuration of the DDF Query is handles through config pages.
+     * @param targetIndex - index in Elasticsearch to post documents into
+     * @param dryRun - if true, connect to Elasticsearch but don't index and documents.
+     * @return
+     */
+    Map<String, String> syncAll(String targetIndex, boolean dryRun);
 }

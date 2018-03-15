@@ -111,7 +111,13 @@ public class ElasticPublisher {
     }
 
     /*
-     * This mapping has a hard-coded mapping name in as much as the fields are for a specific purpose
+     * This mapping has a hard-coded mapping name in as much as the fields are for a specific purpose.
+     * It maps a singular "centroid" property which is manually calculated and appended by the ElasticSync code.
+     * This is in addition to treating the already standardized GeoJson geometry as a proper shape.
+     * Thus, geo_shape queries supported by Elasticsearch can take advantage of true polygon intersection logic;
+     * while at the same time a quick centroid based lookup can be done on the centroid by the Kibana coordinate map in particular.
+     * If the mapping system would have supported both the geo_shape and coordinates as geo_points at the same time,
+     * the centroid addition might have been avoided. However, it wouldn't have been as efficient anyway.
      */
     private static final String METACARD_MAPPING = 
           "{ \"" + METACARD_TYPE + "\": {"
