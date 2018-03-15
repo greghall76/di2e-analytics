@@ -15,10 +15,8 @@
  */
 package net.di2e.ecdr.analytics.sync.commands;
 
-import java.io.File;
 import java.io.PrintStream;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.karaf.shell.api.action.Action;
@@ -34,25 +32,25 @@ import org.slf4j.LoggerFactory;
 import ddf.catalog.CatalogFramework;
 import net.di2e.ecdr.analytics.sync.elastic.ElasticSync;
 
-@Command(scope = "cdr", name = "sync", description = "Synchronizes records into an Elastic index for analysis. Default index is named metacards."
-        + "Synchronizes metacards to an Elasticsearch index based on a configurable DDF query and Elasticsearch connection.")
+@Command(scope = "cdr", name = "index", description = "Creates/deletes metacard indexes in Elastic to be used for synchronization and analysis. Defaults: creates index named metacards"
+        + "Creates/deletes metacards indexes in Elastic used for analysis based on a configurable Elasticsearch connection. Defaults to metacards if names not provided.")
 @Service
-public class ElasticSyncCommand implements Action {
+public class ElasticIndexCommand implements Action {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger( ElasticSyncCommand.class );
-    static final String SYNC_DIR = "sync";
+    private static final Logger LOGGER = LoggerFactory.getLogger( ElasticIndexCommand.class );
 
-    @Argument(index = 0, name = "sourceIds", description = "The name of the Source/Site to synchronize", required = false, multiValued = true)
-    @Completion(value = net.di2e.ecdr.analytics.sync.commands.ElasticSyncCompleter.class)
-    private List<String> ids;
+    @Argument(index = 0, name = "names", description = "The names of the indixes to create/delete", required = false, multiValued = true)
+    @Completion(value = net.di2e.ecdr.analytics.sync.commands.ElasticIndexCompleter.class)
+    private List<String> indexes;
 
-    @Option(name = "--index", description = "Specify --index=my_index you would like to sync metacards into")
-    private String index = "metacards";
+    @Option(name = "--create", description = "Create the index")
+    private boolean create = true;
+    
+    @Option(name = "--delete", description = "Delete the index")
+    private boolean delete = false;
 
-    @Option(name = "--log", description = "Logs metacards to disk under the $DDF_HOME/sync directory")
-    private boolean log = false;
-
-    @Option(name = "--verbose", description = "Provide verbose output on transferred records to the screen")
+    
+    @Option(name = "--verbose", description = "Provide verbose output to the screen")
     private boolean verbose = false;
 
     @Reference
@@ -62,7 +60,7 @@ public class ElasticSyncCommand implements Action {
 
     private PrintStream console = System.out;
     
-    public ElasticSyncCommand() {
+    public ElasticIndexCommand() {
     }
 
     @Override
@@ -70,23 +68,24 @@ public class ElasticSyncCommand implements Action {
         
         try {
             elasticSync.setVerbose( verbose );
-            if (log) {
-               elasticSync.setDumpDir( new File( SYNC_DIR ) );
-            }
-            if ( CollectionUtils.isNotEmpty( ids ) ) {
-                ids.forEach( sourceId -> { 
-                    Map<String, String> syncResults = elasticSync.sync( sourceId, index );
-                    for (String key:syncResults.keySet()) {
-                       console.println( key + '=' + syncResults.get( key ) );
+            if ( CollectionUtils.isNotEmpty( indexes ) ) {
+                indexes.forEach( idx -> {
+                    int httpResponse;
+                    if (delete) {
+                      httpResponse = elasticSync.deleteIndex( idx );
+                    } else {
+                      httpResponse = elasticSync.createIndex( idx );
                     }
+                    console.print( "HTTP response: " + httpResponse );
                 } );
             } else {
-               framework.getSourceIds().forEach( ( sourceId ) -> {
-                   Map<String, String> syncResults = elasticSync.sync( sourceId, index );
-                   for (String key:syncResults.keySet()) {
-                      console.println( key + '=' + syncResults.get( key ) );
-                   }
-               } );
+                int httpResponse;
+                if (delete) {
+                  httpResponse = elasticSync.deleteIndex( "metacards" );
+                } else {
+                  httpResponse = elasticSync.createIndex( "metacards" );
+                }
+                console.print( "HTTP response: " + httpResponse );
             }
         } catch ( Exception e ) {
             console.println( "Encountered error while trying to perform command. Check log for more details." );

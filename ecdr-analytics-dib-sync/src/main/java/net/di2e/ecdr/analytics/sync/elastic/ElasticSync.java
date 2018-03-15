@@ -24,7 +24,11 @@ public interface ElasticSync {
     
     void setDumpDir(File dumpDir);
 
-    Map<String, String> sync( String sourceId );
+    int createIndex(String idx);
     
-    Map<String, String> syncAll();
+    int deleteIndex(String idx);
+    
+    Map<String, String> sync( String sourceId, String targetIndex );
+    
+    Map<String, String> syncAll(String targetIndex);
 }

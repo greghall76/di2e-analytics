@@ -27,13 +27,12 @@ import org.apache.karaf.shell.support.completers.StringsCompleter;
 import ddf.catalog.CatalogFramework;
 
 @Service
-public class ElasticSyncCompleter implements Completer {
+public class ElasticIndexCompleter implements Completer {
 
     @Reference
     private CatalogFramework framework;
 
     /**
-     * WARNING: This isn't returning results.
      * @param session
      *            the beginning string typed by the user
      * @param commandLine
@@ -43,7 +42,7 @@ public class ElasticSyncCompleter implements Completer {
      */
     public int complete( Session session, CommandLine commandLine, List<String> candidates ) {
         StringsCompleter delegate = new StringsCompleter();
-        delegate.getStrings().addAll( framework.getSourceIds() );
+        delegate.getStrings().add( "my_metacards_idx_1" );
         return delegate.complete( session, commandLine, candidates );
     }
 

@@ -83,29 +83,38 @@ public class ElasticPublisher {
     }
     
     /**
-     * 
+     * Create the specified index
      * @param name
      */
-    public void createIndex( String name ) throws IOException {
+    public int createIndex( String name ) throws IOException {
         // String settings = "\"settings\" : {\n" +
         // " \"number_of_shards\" : 5,\n" +
         // " \"number_of_replicas\" : 1\n" +
         // " }\n";
-        //try to delete index in case is exists
-        JestResult result = client.execute(new DeleteIndex.Builder( name ).build());
-        LOGGER.debug("Deleting index response code:" + result.getResponseCode());
-        result = client.execute(new CreateIndex.Builder( name ).build());
+        JestResult result = client.execute(new CreateIndex.Builder( name ).build());
         LOGGER.info("Create index response code:" + result.getResponseCode());
         // add support settings without extra dependencies on elaticsearch
         // .settings(
         // Settings.builder().loadFromSource(settings).build().getAsMap()).build());
+        return result.getResponseCode();
+    }
+    
+    /**
+     * Delete the specified index
+     * @param name
+     * @throws IOException
+     */
+    public int deleteIndex( String name ) throws IOException {
+        JestResult result = client.execute(new DeleteIndex.Builder( name ).build());
+        LOGGER.debug("Deleting index response code:" + result.getResponseCode());
+        return result.getResponseCode();
     }
 
     /*
      * This mapping has a hard-coded mapping name in as much as the fields are for a specific purpose
      */
     private static final String METACARD_MAPPING = 
-        "\"" + METACARD_TYPE + "\": {"
+          "{ \"" + METACARD_TYPE + "\": {"
           + "\"properties\": {"
           +    "\"properties.centroid\": {"
           +      "\"type\": \"geo_point\""
@@ -116,19 +125,20 @@ public class ElasticPublisher {
           +              "\"precision\": \"1m\""
           +    "}"
           + "}"
-          + "}";
+          + "} }";
     
     /**
      * Built both for mapping the geojson standardized geometry as an Elasticsearch geo_shape and
      * presumes the extra centroid point we'll add for the geo_point only capable charts.
      * @param index
      */
-    public void createIndexMetacardMapping(String index) throws IOException {
+    public int createMetacardMapping(String index) throws IOException {
         //try to delete in case it exists
         JestResult result = client.execute(new DeleteIndex.Builder(index).type(METACARD_TYPE).build());
         LOGGER.debug("Delete index mapping response code:" + result.getResponseCode());
         result = client.execute(new PutMapping.Builder(index, METACARD_TYPE, METACARD_MAPPING).build());
         LOGGER.info("Create index mapping response code:" + result.getResponseCode());
+        return result.getResponseCode();
     }
     
     /**

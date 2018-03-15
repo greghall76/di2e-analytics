@@ -21,7 +21,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Serializable;
-
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -64,8 +65,6 @@ import net.di2e.ecdr.analytics.sync.elastic.ElasticConfiguration;
 import net.di2e.ecdr.analytics.sync.elastic.ElasticSync;
 
 public class ElasticSyncImpl implements ElasticSync {
-
-    private static final String METACARDS_IDX = "metacards";
     
     private static DateTimeFormatter formatter;
 
@@ -120,6 +119,12 @@ public class ElasticSyncImpl implements ElasticSync {
         namespaceMap.put( "ICISM", ICISM_NAMESPACE );
         LOGGER.info( "ElasticSyncImpl is online...." );
     }
+    
+    private void connect() throws URISyntaxException, UnknownHostException {
+        if (elasticPublisher == null) {
+            this.elasticPublisher = new ElasticPublisher(elasticConfig);
+        }
+    }
 
     @Override
     public void setVerbose( boolean verbose ) {
@@ -132,12 +137,44 @@ public class ElasticSyncImpl implements ElasticSync {
     }
 
     @Override
-    public Map<String, String> sync( String sourceId ) {
+    public int createIndex(String idx) {
+        int response = 0;
+        try {
+            connect();
+            response = elasticPublisher.createIndex( idx );
+            console.println( "Index create: HTTP Response: " + response );
+            if (response == 200) {
+                console.print( "Creating metacard mapping..." );
+                // ensure our mapping is present for any index we create
+                response = elasticPublisher.createMetacardMapping(idx);
+            }
+        } catch (Exception e) {
+            LOGGER.error( "Exception creating index in Elasticsearch=>" + e );
+            console.print( "Exception creating index:" + idx + ". See log for details" );
+        }
+        return response;
+    }
+    
+    @Override
+    public int deleteIndex(String idx) {
+        int response = 0;
+        try {
+          connect();
+          response = elasticPublisher.deleteIndex( idx );
+        } catch (Exception e) {
+          LOGGER.error( "Exception deleting index in Elasticsearch=>" + e );
+          console.print( "Exception deleting index:" + idx + ". See log for details" );
+        }
+        return response;
+    }
+    
+    @Override
+    public Map<String, String> sync( String sourceId, String targetIndex ) {
         long beginMs = System.currentTimeMillis();
         HashMap<String, String> resultProperties = new HashMap<>();
-        syncRecords( sourceId, resultProperties );
+        syncRecords( sourceId, targetIndex, resultProperties );
         try {
-            elasticPublisher.flushBulkRequest( METACARDS_IDX );
+            elasticPublisher.flushBulkRequest( targetIndex );
         } catch (IOException ioE) {
             LOGGER.error( "IOException syncing records to Elasticsearch=>" + ioE );
         } finally {
@@ -148,15 +185,15 @@ public class ElasticSyncImpl implements ElasticSync {
     }
 
     @Override
-    public Map<String, String> syncAll() {
+    public Map<String, String> syncAll(String targetIndex) {
         long beginMs = System.currentTimeMillis();
         HashMap<String, String> resultProperties = new HashMap<>();
         framework.getSourceIds().forEach( ( sourceId ) -> {
-            syncRecords( sourceId, resultProperties );
+            syncRecords( sourceId, targetIndex, resultProperties );
         } );
      
         try {
-          elasticPublisher.flushBulkRequest( METACARDS_IDX );
+          elasticPublisher.flushBulkRequest( targetIndex );
         } catch (IOException ioE) {
           LOGGER.error( "IOException syncing records to Elasticsearch=>" + ioE );
         } finally {
@@ -171,7 +208,7 @@ public class ElasticSyncImpl implements ElasticSync {
      * @param sourceId
      * @param resultProperties
      */
-    protected void syncRecords( String sourceId, Map<String, String> resultProperties ) {
+    protected void syncRecords( String sourceId, String index, Map<String, String> resultProperties ) {
         
         console.println( "Querying sync source: " + sourceId );
         
@@ -186,9 +223,8 @@ public class ElasticSyncImpl implements ElasticSync {
         long deltaTime = 0;
         
         try {
-            if (elasticPublisher == null) {
-                this.elasticPublisher = new ElasticPublisher(elasticConfig);
-            }
+            connect();
+            
             if ( dumpDir != null ) {
                 if ( !dumpDir.exists() ) {
                    dumpDir.mkdirs();
@@ -223,7 +259,7 @@ public class ElasticSyncImpl implements ElasticSync {
                         }
                         docCnt++;
                         // Publish doc... ? optimize bundling of multiple docs ?
-                        elasticPublisher.queueBundleRequest( METACARDS_IDX, metacard.getId(), jsonObject);
+                        elasticPublisher.queueBundleRequest( index, metacard.getId(), jsonObject);
                         deltaTime += System.currentTimeMillis() - beginTime;
                         if (verbose) {
                             console.println("Queued:" + jsonObject.toJSONString());
