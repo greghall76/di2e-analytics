@@ -43,9 +43,9 @@ import org.w3c.dom.Node;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
-import com.vividsolutions.jts.io.WKTWriter;
 
 import ddf.catalog.CatalogFramework;
 import ddf.catalog.data.BinaryContent;
@@ -173,7 +173,7 @@ public class ElasticSyncImpl implements ElasticSync {
      */
     protected void syncRecords( String sourceId, Map<String, String> resultProperties ) {
         
-        console.println( "Elastic sync source: " + sourceId );
+        console.println( "Querying sync source: " + sourceId );
         
         boolean hasMoreRecords = true;
 
@@ -215,8 +215,9 @@ public class ElasticSyncImpl implements ElasticSync {
                         // See about inserting a centroid for Elastic to have a simple geo_point since it's charts struggle w/ shapes
                         String wkt = metacard.getLocation();
                         if ( StringUtils.isNotBlank( wkt ) ) {
-                           Geometry geometry = new WKTReader().read( wkt);
-                           String center = new WKTWriter().write( geometry.getCentroid() );
+                           Geometry geometry = new WKTReader().read( wkt );
+                           Coordinate coord = geometry.getCentroid().getCoordinate();
+                           String center = Double.toString( coord.y ) + ',' + Double.toString( coord.x );
                            Map<String, Object> props = (Map<String, Object>)  jsonObject.get( "properties" );
                            props.put( "centroid", center );
                         }
