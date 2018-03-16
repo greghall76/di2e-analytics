@@ -243,8 +243,8 @@ public class ElasticSyncImpl implements ElasticSync {
 
                 List<Result> results = response.getResults();
                 hasMoreRecords = (results.size() == maxRecordCount) && startDate != null;
-                console.printf( "Adding details from query results for %d records from site %s", Integer.valueOf( results.size() ), sourceId );
-                LOGGER.debug( "Adding details from query results for {} records from site {} in the Content Collection date range [{} - {}] and keywords[{}]",
+                console.printf( "Synchronizing query results for %d records from site %s", Integer.valueOf( results.size() ), sourceId );
+                LOGGER.debug( "Synchronizing query results for {} records from site {} in the Content Collection date range [{} - {}] and keywords[{}]",
                                Integer.valueOf( results.size() ), sourceId, startDate, endDate, queryKeywords );
 
                 for ( Result result : results ) {
