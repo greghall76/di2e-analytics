@@ -17,7 +17,7 @@ To test:
  # Basic X-Pack only... 
  docker run --net elastic-net -p 9200:9200 docker.elastic.co/elasticsearch/elasticsearch:di2e-cfg
  # Launch kibana and export port 5601
- docker run --net elastic-net -p 5601:5601 --add-host=elasticsearch:`hostname` docker.elastic.co/kibana/kibana:di2e-cfg
+ docker run --net elastic-net -p 5601:5601 --add-host=elasticsearch:yourip docker.elastic.co/kibana/kibana:di2e-cfg
  # Launch the DIB and create and index and sync it 
  cd $DDF_HOME/bin
  ./dib
