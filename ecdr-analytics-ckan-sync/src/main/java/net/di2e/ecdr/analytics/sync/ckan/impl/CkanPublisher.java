@@ -34,6 +34,7 @@ import ddf.catalog.data.types.Media;
 import eu.trentorise.opendata.jackan.CkanClient;
 import eu.trentorise.opendata.jackan.exceptions.CkanException;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
+import eu.trentorise.opendata.jackan.model.CkanOrganization;
 import eu.trentorise.opendata.jackan.model.CkanResource;
 import net.di2e.ecdr.analytics.sync.ckan.config.CkanConfiguration;
 
@@ -49,7 +50,9 @@ public class CkanPublisher {
         // See about token use later
         URI uri = new URI( config.getProtocol().endsWith( "://" ) 
                            ? config.getProtocol() : config.getProtocol() +  "://" + config.getHost() + ':' + config.getPort());
-        client = CkanClient.builder().setCatalogUrl( uri.toString() ).setTimeout( config.getTimeout() ).build();
+        client = CkanClient.builder().setCkanToken( config.getToken() )
+                                     .setCatalogUrl( uri.toString() )
+                                     .setTimeout( config.getTimeout() ).build();
         LOGGER.info("CKAN publisher initialized with:" + uri);
         if ( !tmpDir.exists() ) {
            if ( tmpDir.mkdirs() ) {
@@ -63,16 +66,25 @@ public class CkanPublisher {
      * @return
      * @throws CkanException
      */
-    public List<String> list() throws CkanException {
+    public List<String> listDatasets() throws CkanException {
         return client.getDatasetList();
     }
 
+    /**
+     * Organizations in CKAN
+     * @return
+     * @throws CkanException
+     */
+    public List<String> listOrganizations() throws CkanException {
+        return client.getOrganizationNames();
+    }
+    
     /**
      * Create a named dataset
      * @param name
      * @throws CkanException
      */
-    public void createDataset( String name ) throws CkanException {
+    public void createDataset( String name, String ownerOrg ) throws CkanException {
         // String settings = "\"settings\" : {\n" +
         // " \"number_of_shards\" : 5,\n" +
         // " \"number_of_replicas\" : 1\n" +
@@ -81,6 +93,7 @@ public class CkanPublisher {
         ckanDs.setAuthor( "cdr/ckan" );
         // Lots of options here for maintainer, email, create, and licening....
         ckanDs.setName( name );
+        ckanDs.setOwnerOrg( ownerOrg );
         ckanDs = client.createDataset(ckanDs);
         LOGGER.info("Created dataset:" + name);
     }
@@ -96,6 +109,20 @@ public class CkanPublisher {
     }
     
     /**
+     * 
+     * @param orgName
+     * @throws CkanException
+     */
+    public void createOrganization(String orgName) throws CkanException {
+        CkanOrganization ckanOrg = new CkanOrganization();
+        ckanOrg.setCreated( new Timestamp(System.currentTimeMillis()) );
+        ckanOrg.setDisplayName( orgName );
+        ckanOrg.setId( orgName ); // I don't think this is a UID
+        ckanOrg.setDescription(" API created ");
+        client.createOrganization( ckanOrg );
+    }
+   
+    /**
      * Given the specified dataset, and various attributes required, create a CKAN resource reference in the library back to this product.
      *
      * @param dataset
@@ -109,7 +136,7 @@ public class CkanPublisher {
      * @throws IOException
      */
     public void addResource(String dataset, String id, Date timestamp, String size, String contentType, byte[] thumbnail, URI uri, JSONObject metacard) throws IOException {
-        CkanResource ckanRs = new CkanResource(uri.toString(), dataset);
+        CkanResource ckanRs = new CkanResource(uri != null ? uri.toString() : "", dataset);
         ckanRs.setCreated( new Timestamp(timestamp.getTime()) );
         if (thumbnail != null && thumbnail.length > 0 ) {
             File tmpFile = new File(tmpDir, String.valueOf(id) + "thumb.png");

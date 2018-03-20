@@ -46,15 +46,21 @@ public class CkanDatasetCommand implements Action {
     @Option(name = "--create", description = "Create the dataset")
     private boolean create = true;
     
+    @Option(name = "--org", description = "Specify --org=owning_org Required when creating a dataset" )
+    private String organization;
+    
     @Option(name = "--delete", description = "Delete the dataset")
     private boolean delete = false;
-
+    
+    @Option(name = "--list", description = "List all datasets")
+    private boolean list = false;
     
     @Option(name = "--verbose", description = "Provide verbose output to the screen")
     private boolean verbose = false;
 
     @Reference
     private CatalogFramework framework;
+    
     @Reference
     private CkanSync ckanSync;
 
@@ -68,13 +74,23 @@ public class CkanDatasetCommand implements Action {
         
         try {
             ckanSync.setVerbose( verbose );
-            if ( CollectionUtils.isNotEmpty( datasets ) ) {
+            if ( list ) {
+               List<String> dsetListing = ckanSync.listDatasets();
+               dsetListing.forEach( ds -> {
+                  console.print(ds);
+               });
+            } else if ( CollectionUtils.isNotEmpty( datasets ) ) {
                 datasets.forEach( dsName -> {
                     boolean result;
                     if (delete) {
                         result = ckanSync.deleteDataset( dsName );
                     } else {
-                        result = ckanSync.createDataset( dsName );
+                        if (organization != null) {
+                          result = ckanSync.createDataset( dsName, organization );
+                        } else {
+                          console.println( "You must provide an organization when creating a dataset");
+                          result = false;
+                        }
                     }
                     console.print( "Success: " + result );
                 } );
@@ -82,12 +98,15 @@ public class CkanDatasetCommand implements Action {
                 boolean result;
                 if (delete) {
                     result = ckanSync.deleteDataset( "metacards" );
+                } else if (organization != null) {
+                    result = ckanSync.createDataset( "metacards", organization );
                 } else {
-                    result = ckanSync.createDataset( "metacards" );
+                  console.println( "You must provide an organization when creating a dataset");  
+                  result = false;
                 }
                 console.print( "Success: " + result );
             }
-        } catch ( Exception e ) {
+        } catch ( Throwable e ) {
             console.println( "Encountered error while trying to perform command. Check log for more details." );
             LOGGER.warn( "Error while performing command.", e );
         }

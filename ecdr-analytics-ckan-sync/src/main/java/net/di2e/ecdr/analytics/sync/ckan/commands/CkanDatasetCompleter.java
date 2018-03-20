@@ -25,13 +25,16 @@ import org.apache.karaf.shell.api.console.Session;
 import org.apache.karaf.shell.support.completers.StringsCompleter;
 
 import ddf.catalog.CatalogFramework;
+import net.di2e.ecdr.analytics.sync.ckan.CkanSync;
 
 @Service
 public class CkanDatasetCompleter implements Completer {
 
     @Reference
     private CatalogFramework framework;
-
+    
+    @Reference
+    private CkanSync ckanSync;
     /**
      * @param session
      *            the beginning string typed by the user
@@ -42,7 +45,17 @@ public class CkanDatasetCompleter implements Completer {
      */
     public int complete( Session session, CommandLine commandLine, List<String> candidates ) {
         StringsCompleter delegate = new StringsCompleter();
-        delegate.getStrings().add( "my_metacards_idx_1" );
+        if (commandLine.getArguments().length > 0) {
+          for (String s : commandLine.getArguments()) {
+            if (s.equals( "--delete" )) {
+               delegate.getStrings().addAll( ckanSync.listDatasets() );
+            }
+          }
+        } else {
+            delegate.getStrings().add("--create");
+            delegate.getStrings().add("--delete" );
+            delegate.getStrings().add("--list" );
+        }
         return delegate.complete( session, commandLine, candidates );
     }
 

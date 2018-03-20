@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -129,18 +130,18 @@ public class CkanSyncImpl implements CkanSync {
     }
 
     @Override
-    public boolean createDataset(String dataset) {
+    public boolean createDataset(String dataset, String ownerOrg) {
         
         boolean success = false;
         
         try {
             connect();
-            ckanPublisher.createDataset( dataset );
+            ckanPublisher.createDataset( dataset, ownerOrg );
             console.println( "Dataset: " + dataset + " created." );
             success = true;
         } catch (Exception e) {
             LOGGER.error( "Exception creating dataset in ckan=>" + e );
-            console.print( "Exception creating index:" + dataset + ". See log for details" );
+            console.print( "Exception creating dataset:" + dataset + ". See log for details" );
         }
         return success;
     }
@@ -156,10 +157,54 @@ public class CkanSyncImpl implements CkanSync {
           console.println( "Dataset: " + dataset + " deleted." );
           success = true;
         } catch (Exception e) {
-          LOGGER.error( "Exception deleting index in Ckansearch=>" + e );
-          console.print( "Exception deleting index:" + dataset + ". See log for details" );
+          LOGGER.error( "Exception deleting dataset =>" + e );
+          console.print( "Exception deleting dataset:" + dataset + ". See log for details" );
         }
         return success;
+    }
+    
+    @Override
+    public List<String> listDatasets() {
+        List<String> datasets;
+        try {
+            connect();
+            datasets = ckanPublisher.listDatasets();
+        } catch (Exception e) {
+            datasets = Collections.emptyList();
+            LOGGER.error( "Exception listing datasets=>" + e );
+            console.print( "Exception listing datasets. See log for details" );
+        }
+        return datasets;
+    }
+    
+    @Override
+    public boolean createOrganization(String orgName) {
+        boolean success = false;
+        
+        try {
+            connect();
+            ckanPublisher.createOrganization( orgName );
+            console.println( "Organization: " + orgName + " created." );
+            success = true;
+        } catch (Exception e) {
+            LOGGER.error( "Exception creating organization in ckan=>" + e );
+            console.print( "Exception creating organization:" + orgName + ". See log for details" );
+        }
+        return success;
+    }
+    
+    @Override
+    public List<String> listOrganizations() {
+        List<String> orgs;
+        try {
+            orgs = ckanPublisher.listOrganizations();
+            
+        } catch (Exception e) {
+            orgs = Collections.emptyList();
+            LOGGER.error( "Exception listing organizations=>" + e );
+            console.print( "Exception listing organizations. See log for details" );
+        }
+        return orgs;
     }
     
     @Override
@@ -171,7 +216,7 @@ public class CkanSyncImpl implements CkanSync {
         syncRecords( sourceId, dataset, resultProperties, dryRun );
         
         long delta = System.currentTimeMillis() - beginMs;
-        resultProperties.put( "Ckan.sync.queue.time.ms", String.valueOf( delta ) );
+        resultProperties.put( "ckan.sync.queue.time.ms", String.valueOf( delta ) );
         
         return resultProperties;
     }
@@ -186,7 +231,7 @@ public class CkanSyncImpl implements CkanSync {
             syncRecords( sourceId, dataset, resultProperties, dryRun );
         } );
         long delta = System.currentTimeMillis() - beginMs;
-        resultProperties.put( "Ckan.sync.queue.time.ms", String.valueOf( delta ) );
+        resultProperties.put( "ckan.sync.queue.time.ms", String.valueOf( delta ) );
         
         return resultProperties;
     }

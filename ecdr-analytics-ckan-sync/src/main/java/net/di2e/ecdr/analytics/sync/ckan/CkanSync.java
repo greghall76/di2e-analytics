@@ -15,6 +15,7 @@
  */
 package net.di2e.ecdr.analytics.sync.ckan;
 
+import java.util.List;
 import java.util.Map;
 
 public interface CkanSync {
@@ -27,10 +28,11 @@ public interface CkanSync {
 
     /**
      * Creates the named dataset in CKAN  ...will add geospatially coherent mapping with type name "metacard"
-     * @param name
+     * @param name - dataset name
+     * @param ownerOrg - A valid organization
      * @return - true/success or false/failure
      */
-    boolean createDataset(String name);
+    boolean createDataset(String name, String ownerOrg);
     
     /**
      * Deletes the named dataset in CKAN
@@ -38,6 +40,26 @@ public interface CkanSync {
      * @return - true/success or false/failure
      */
     boolean deleteDataset(String name);
+    
+    /**
+     * Takes a listing of datasets present in the CKAN instance.
+     * @return
+     */
+    List<String> listDatasets();
+    
+    /**
+     * Returns org names from CKAN
+     * @return
+     */
+    List<String> listOrganizations();
+    
+    /**
+     * Creates a CKAN org which could then own a dataset.
+     * You can optionally manually create an org through the UI and then reference it
+     * @param orgName
+     * @return
+     */
+    boolean createOrganization(String orgName);
     
     /**
      * Synchronize the specified DDF source. Configuration of the DDF Query is handled through config pages.
