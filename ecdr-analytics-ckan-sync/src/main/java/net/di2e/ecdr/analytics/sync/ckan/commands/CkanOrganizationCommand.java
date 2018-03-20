@@ -71,7 +71,7 @@ public class CkanOrganizationCommand implements Action {
             if ( list ) {
                 List<String> orgListing = ckanSync.listOrganizations();
                 orgListing.forEach( org -> {
-                    console.print( org );
+                    console.print( org + ',');
                 } );
             } else if ( create ) {
                 if ( CollectionUtils.isNotEmpty( organizations ) ) {

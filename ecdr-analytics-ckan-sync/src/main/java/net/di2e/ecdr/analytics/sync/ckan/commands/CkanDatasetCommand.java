@@ -77,7 +77,7 @@ public class CkanDatasetCommand implements Action {
             if ( list ) {
                List<String> dsetListing = ckanSync.listDatasets();
                dsetListing.forEach( ds -> {
-                  console.print(ds);
+                  console.print(ds + ',');
                });
             } else if ( CollectionUtils.isNotEmpty( datasets ) ) {
                 datasets.forEach( dsName -> {

@@ -118,6 +118,7 @@ public class CkanPublisher {
         ckanOrg.setCreated( new Timestamp(System.currentTimeMillis()) );
         ckanOrg.setDisplayName( orgName );
         ckanOrg.setId( orgName ); // I don't think this is a UID
+        ckanOrg.setName( orgName );
         ckanOrg.setDescription(" API created ");
         client.createOrganization( ckanOrg );
     }

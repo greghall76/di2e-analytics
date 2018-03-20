@@ -203,6 +203,7 @@ public class CkanSyncImpl implements CkanSync {
     public List<String> listOrganizations() {
         List<String> orgs;
         try {
+            connect();
             orgs = ckanPublisher.listOrganizations();
             
         } catch (Exception e) {
