@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (C) 2018 Pink Summit, LLC
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.0.0">
+
+    <OCD name="CDR Analytics Ckan Sync Config" id="cdr-analytics.ckan.config">
+        <AD name="Ckan Server Protocol (HTTP/HTTPS)" id="protocol" required="true" type="String" default="http"
+            description="The protocol to access Ckan">
+        </AD> 
+        <AD name="Ckan Server Hostname/IP" id="host" required="true" type="String" default="localhost"
+            description="The hostname or IP of the Ckan">
+        </AD> 
+        <AD name="Ckan Server Port" id="port" required="true" type="Integer" default="5000"
+            description="The port for Ckan sync">
+        </AD>
+        <AD name="Timeout(ms)" id="timeout" required="true" type="Integer" default="10000"
+            description="The timeout for client ReST calls">
+        </AD>
+    </OCD>
+    
+    <OCD name="CDR Analytics CKAN Sync DIB Query Config" id="cdr-analytics.ckan.dib.query">
+        
+        <AD name="Maximum Records Per Poll" id="maxRecordsPerPoll" required="true" type="Integer" default="1000"
+            description="The maximum number of records to request on each query">
+        </AD> 
+        
+        <AD name="Keyword Query" id="keywords" required="false" type="String" default=""
+            description="If any keywords should be used in the query">
+        </AD> 
+
+        <AD name="Start Date" id="startDate" required="true" type="String" default="2000-01-01"
+            description="The start date to use for the query">
+        </AD> 
+        
+        <AD name="Query Date Type" id="dateType" required="true" type="String" default="effective"
+            description="The date type to use for the query (e.g. effective, modified, created)">
+        </AD> 
+        
+        <AD name="Sort Date Type" id="sortDateType" required="true" type="String" default="effective"
+            description="The date type to use to sort the query results(e.g. effective, modified, created)">
+        </AD> 
+        
+        <AD name="Classification" id="classification" required="true" type="String" default="U"
+            description="Classification for the Describe record">
+        </AD> 
+    <!--    
+        <AD name="Owner Producer County" id="ownerProducer" required="true" type="String" default="USA" cardinality="100"
+            description="Owner/Producer Country Code for the Describe record">
+        </AD> 
+   --> 
+    </OCD>
+    
+
+    <Designate pid="cdr-analytics.ckan.dib.query">
+        <Object ocdref="cdr-analytics.ckan.dib.query" />
+    </Designate>
+    
+    <Designate pid="cdr-analytics.ckan.config">
+        <Object ocdref="cdr-analytics.ckan.config" />
+    </Designate>
+    
+</metatype:MetaData>
