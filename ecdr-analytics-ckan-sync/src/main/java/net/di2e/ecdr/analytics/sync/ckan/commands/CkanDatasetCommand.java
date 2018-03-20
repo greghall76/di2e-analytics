@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 import ddf.catalog.CatalogFramework;
 import net.di2e.ecdr.analytics.sync.ckan.CkanSync;
 
-@Command(scope = "cdr:ckan", name = "dataset", description = "Creates/deletes resource datasets in CKAN to be used. Defaults: creates CKAN Dataset named metacards"
+@Command(scope = "ckan", name = "dataset", description = "Creates/deletes resource datasets in CKAN to be used. Defaults: creates CKAN Dataset named metacards"
         + "Creates/deletes metacards as datasets in CKAN used for convenient review on a configurable CKAN connection. Defaults to metacards if names not provided.")
 @Service
 public class CkanDatasetCommand implements Action {

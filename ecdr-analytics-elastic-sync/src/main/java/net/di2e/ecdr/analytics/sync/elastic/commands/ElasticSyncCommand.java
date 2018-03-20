@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 import ddf.catalog.CatalogFramework;
 import net.di2e.ecdr.analytics.sync.elastic.ElasticSync;
 
-@Command(scope = "cdr:elastic", name = "sync", description = "Synchronizes records into an Elastic index for analysis. Default index is named metacards."
+@Command(scope = "elasticsearch", name = "sync", description = "Synchronizes records into an Elastic index for analysis. Default index is named metacards."
         + "Synchronizes metacards to an Elasticsearch index based on a configurable DDF query and Elasticsearch connection.")
 @Service
 public class ElasticSyncCommand implements Action {

@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 import ddf.catalog.CatalogFramework;
 import net.di2e.ecdr.analytics.sync.elastic.ElasticSync;
 
-@Command(scope = "cdr:elastic", name = "index", description = "Creates/deletes metacard indexes in Elastic to be used for synchronization and analysis. Defaults: creates index named metacards"
+@Command(scope = "elasticsearch", name = "index", description = "Creates/deletes metacard indexes in Elastic to be used for synchronization and analysis. Defaults: creates index named metacards"
         + "Creates/deletes metacards indexes in Elastic used for analysis based on a configurable Elasticsearch connection. Defaults to metacards if names not provided.")
 @Service
 public class ElasticIndexCommand implements Action {

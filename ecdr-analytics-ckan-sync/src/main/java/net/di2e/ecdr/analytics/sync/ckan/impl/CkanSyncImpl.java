@@ -137,7 +137,9 @@ public class CkanSyncImpl implements CkanSync {
         try {
             connect();
             ckanPublisher.createDataset( dataset, ownerOrg );
-            console.println( "Dataset: " + dataset + " created." );
+            if (verbose) {
+              console.println( "Dataset: " + dataset + " created." );
+            }
             success = true;
         } catch (Exception e) {
             LOGGER.error( "Exception creating dataset in ckan=>" + e );
@@ -154,7 +156,9 @@ public class CkanSyncImpl implements CkanSync {
         try {
           connect();
           ckanPublisher.deleteDataset( dataset );
-          console.println( "Dataset: " + dataset + " deleted." );
+          if (verbose) {
+            console.println( "Dataset: " + dataset + " deleted." );
+          }
           success = true;
         } catch (Exception e) {
           LOGGER.error( "Exception deleting dataset =>" + e );
@@ -184,7 +188,9 @@ public class CkanSyncImpl implements CkanSync {
         try {
             connect();
             ckanPublisher.createOrganization( orgName );
-            console.println( "Organization: " + orgName + " created." );
+            if (verbose) {
+              console.println( "Organization: " + orgName + " created." );
+            }
             success = true;
         } catch (Exception e) {
             LOGGER.error( "Exception creating organization in ckan=>" + e );

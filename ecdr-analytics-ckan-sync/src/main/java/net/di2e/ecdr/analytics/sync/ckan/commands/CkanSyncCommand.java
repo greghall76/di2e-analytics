@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import ddf.catalog.CatalogFramework;
 import net.di2e.ecdr.analytics.sync.ckan.CkanSync;
 
-@Command(scope = "cdr:ckan", name = "sync", description = "Synchronizes records into an Elastic index for analysis. Default index is named metacards."
+@Command(scope = "ckan", name = "sync", description = "Synchronizes records into an Elastic index for analysis. Default index is named metacards."
         + "Synchronizes metacards to an Elasticsearch index based on a configurable DDF query and Elasticsearch connection.")
 @Service
 public class CkanSyncCommand implements Action {

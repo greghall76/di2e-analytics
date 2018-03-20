@@ -161,6 +161,7 @@ public class ElasticSyncImpl implements ElasticSync {
         try {
           connect();
           response = elasticPublisher.deleteIndex( idx );
+          console.println( "Index delete: HTTP Response: " + response );
         } catch (Exception e) {
           LOGGER.error( "Exception deleting index in Elasticsearch=>" + e );
           console.print( "Exception deleting index:" + idx + ". See log for details" );
