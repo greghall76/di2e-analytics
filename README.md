@@ -3,8 +3,8 @@ di2e analytics project for synchronizing metadata to Elasticsearch as a Kibana f
 
 #Building:
  Build a configuration of elasticsearch and kibana that have the graph enabled...
- cd elastic && docker build . -t docker.elastic.co/elasticsearch/elasticsearch:di2e-cfg
- cd kibana && docker build . -t docker.elastic.co/kibana/kibana:di2e-cfg 
+ cd elastic && docker build -t  pinksummit/elasticsearch .
+ cd kibana && docker build -t pinksummit/kibana .
 
  mvn clean install
 
@@ -18,7 +18,7 @@ di2e analytics project for synchronizing metadata to Elasticsearch as a Kibana f
  kar:install $BUILD_DIR/ecdr-analytics-app/target/ecdr-analytics-app-1.0.kar
 
 # NOTE: elasticsearch has been giving me memory issues on the two small time hosts I have.
-#       so, I created an AWS service deploy of it at ec2-18-219-95-168.us-east-2.compute.amazonaws.com
+#       so, I created an AWS service deploy of it at http://ec2-18-188-96-253.us-east-2.compute.amazonaws.com
 # The EC2 instance had to be tailored as follows....
  1) update the file handle limits allowed to docker containers from 1024:4096 to something much bigger...
   vi /etc/sysconfig/docker
@@ -36,6 +36,7 @@ di2e analytics project for synchronizing metadata to Elasticsearch as a Kibana f
     # max open file handles
     fs.file-max=10240000
 # Then reboot the EC2 instance...
+# Also, the docker image for elasticsearch needed to be tailored to have roughly twice the memory as the JVM.
 
 # Running / Testing:
   Make sure CKAN is up using docker-compose restart ckan from the ckan/src/contrib/docker dir after you git clone ckan.
