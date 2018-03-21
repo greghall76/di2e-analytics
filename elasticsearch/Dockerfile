@@ -1,2 +1,3 @@
-FROM docker.elastic.co/elasticsearch/elasticsearch:6.2.2
+FROM docker.elastic.co/elasticsearch/elasticsearch:6.2.3
+COPY --chown=elasticsearch:elasticsearch jvm.options /usr/share/elasticsearch/config/
 COPY --chown=elasticsearch:elasticsearch elasticsearch.yml /usr/share/elasticsearch/config/
