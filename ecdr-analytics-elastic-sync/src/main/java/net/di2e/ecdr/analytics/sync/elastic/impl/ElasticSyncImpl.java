@@ -17,7 +17,6 @@ package net.di2e.ecdr.analytics.sync.elastic.impl;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -95,7 +94,6 @@ public class ElasticSyncImpl implements ElasticSync {
     private FilterBuilder filterBuilder;
     private DibQueryConfiguration syncConfig;
     private ElasticConfiguration elasticConfig;
-    private ElasticPublisher elasticPublisher;
     private MetacardTransformer geoJsonTransformer;
      
     private Map<String, Serializable> requestProperties;
@@ -120,10 +118,8 @@ public class ElasticSyncImpl implements ElasticSync {
         LOGGER.info( "ElasticSyncImpl is online...." );
     }
     
-    private void connect() throws URISyntaxException, UnknownHostException {
-        if (elasticPublisher == null) {
-            this.elasticPublisher = new ElasticPublisher(elasticConfig);
-        }
+    private ElasticPublisher connect() throws URISyntaxException, UnknownHostException {
+        return new ElasticPublisher(elasticConfig);
     }
 
     @Override
@@ -139,8 +135,7 @@ public class ElasticSyncImpl implements ElasticSync {
     @Override
     public int createIndex(String idx) {
         int response = 0;
-        try {
-            connect();
+        try (ElasticPublisher elasticPublisher = connect()) {
             response = elasticPublisher.createIndex( idx );
             console.println( "Index create: HTTP Response: " + response );
             if (response == 200) {
@@ -151,15 +146,14 @@ public class ElasticSyncImpl implements ElasticSync {
         } catch (Exception e) {
             LOGGER.error( "Exception creating index in Elasticsearch=>" + e );
             console.print( "Exception creating index:" + idx + ". See log for details" );
-        }
+        } 
         return response;
     }
     
     @Override
     public int deleteIndex(String idx) {
         int response = 0;
-        try {
-          connect();
+        try (ElasticPublisher elasticPublisher = connect()) {
           response = elasticPublisher.deleteIndex( idx );
           console.println( "Index delete: HTTP Response: " + response );
         } catch (Exception e) {
@@ -173,17 +167,18 @@ public class ElasticSyncImpl implements ElasticSync {
     public Map<String, String> sync( String sourceId, String targetIndex, boolean dryRun ) {
         long beginMs = System.currentTimeMillis();
         HashMap<String, String> resultProperties = new HashMap<>();
-        syncRecords( sourceId, targetIndex, resultProperties, dryRun );
-        try {
+        
+        try (ElasticPublisher elasticPublisher = connect()) {
+            syncRecords(elasticPublisher, sourceId, targetIndex, resultProperties, dryRun );
             if (!dryRun) {
               elasticPublisher.flushBulkRequest( targetIndex );
             }
-        } catch (IOException ioE) {
-            LOGGER.error( "IOException syncing records to Elasticsearch=>" + ioE );
+        } catch (Exception e) {
+            LOGGER.error( "Exception syncing records to Elasticsearch=>" + e );
         } finally {
             long delta = System.currentTimeMillis() - beginMs;
             resultProperties.put( "elastic.sync.queue.time.ms", String.valueOf( delta ) );
-          }
+        }
         return resultProperties;
     }
 
@@ -191,19 +186,21 @@ public class ElasticSyncImpl implements ElasticSync {
     public Map<String, String> syncAll(String targetIndex, boolean dryRun) {
         long beginMs = System.currentTimeMillis();
         HashMap<String, String> resultProperties = new HashMap<>();
-        framework.getSourceIds().forEach( ( sourceId ) -> {
-            syncRecords( sourceId, targetIndex, resultProperties, dryRun );
-        } );
-     
-        try {
-          if (!dryRun) {
-            elasticPublisher.flushBulkRequest( targetIndex );
-          }
-        } catch (IOException ioE) {
-          LOGGER.error( "IOException syncing records to Elasticsearch=>" + ioE );
+
+        try ( ElasticPublisher elasticPublisher = connect() ) {
+
+            framework.getSourceIds().forEach( ( sourceId ) -> {
+                syncRecords( elasticPublisher, sourceId, targetIndex, resultProperties, dryRun );
+            } );
+
+            if ( !dryRun ) {
+                elasticPublisher.flushBulkRequest( targetIndex );
+            }
+        } catch ( Exception e ) {
+            LOGGER.error( "Exception syncing records to Elasticsearch=>" + e );
         } finally {
-          long delta = System.currentTimeMillis() - beginMs;
-          resultProperties.put( "elastic.sync.queue.time.ms", String.valueOf( delta ) );
+            long delta = System.currentTimeMillis() - beginMs;
+            resultProperties.put( "elastic.sync.queue.time.ms", String.valueOf( delta ) );
         }
         return resultProperties;
     }
@@ -213,7 +210,8 @@ public class ElasticSyncImpl implements ElasticSync {
      * @param sourceId
      * @param resultProperties
      */
-    protected void syncRecords( String sourceId, String index, Map<String, String> resultProperties, boolean dryRun ) {
+    protected void syncRecords( ElasticPublisher elasticPublisher, String sourceId, String index,
+                                Map<String, String> resultProperties, boolean dryRun ) {
         
         console.println( "Querying sync source: " + sourceId );
         
@@ -226,9 +224,8 @@ public class ElasticSyncImpl implements ElasticSync {
         int maxRecordCount = syncConfig.getMaxRecordsPerPoll();
         int docCnt = 0;
         long deltaTime = 0;
-        
+
         try {
-            connect();
             
             if ( dumpDir != null ) {
                 if ( !dumpDir.exists() ) {
@@ -292,7 +289,6 @@ public class ElasticSyncImpl implements ElasticSync {
         }
     }
 
-
     private String getAttributeValue( Node item, String namespace, String attribute ) {
         String attributeValue = null;
         Node node = item.getAttributes().getNamedItemNS( namespace, attribute );
@@ -327,6 +323,5 @@ public class ElasticSyncImpl implements ElasticSync {
             return Security.getInstance().getSystemSubject();
         } );
     }
-
 
 }

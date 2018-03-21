@@ -38,7 +38,7 @@ import io.searchbox.indices.DeleteIndex;
 import io.searchbox.indices.mapping.PutMapping;
 import net.di2e.ecdr.analytics.sync.elastic.config.ElasticConfiguration;
 
-public class ElasticPublisher {
+public class ElasticPublisher implements AutoCloseable {
     
     private static final String METACARD_TYPE = "metacard";
     private static final Logger LOGGER = LoggerFactory.getLogger( ElasticPublisher.class );
@@ -182,6 +182,10 @@ public class ElasticPublisher {
           JestResult result = client.execute( bulkBuilder.build() );
           LOGGER.info("Flush document index request response code:" + result.getResponseCode());
        }
+    }
+    
+    public void close() throws Exception {
+        client.close();
     }
     
 }
