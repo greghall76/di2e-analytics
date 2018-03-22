@@ -109,7 +109,8 @@ public class ElasticPublisher implements AutoCloseable {
         return result.getResponseCode();
     }
 
-    /*
+    /* NOTE: The 10k meter precision on the quadtree for geo_shape search is knowingly coarse but 1m runs out of memory and
+     *       it isn't really being used for the moment. (just the centroid is) Will make it configurable later.
      * This mapping has a hard-coded mapping name in as much as the fields are for a specific purpose.
      * It maps a singular "centroid" property which is manually calculated and appended by the ElasticSync code.
      * This is in addition to treating the already standardized GeoJson geometry as a proper shape.
@@ -127,7 +128,7 @@ public class ElasticPublisher implements AutoCloseable {
           +    "\"geometry\": {"
           +              "\"type\": \"geo_shape\","
           +              "\"tree\": \"quadtree\","
-          +              "\"precision\": \"1m\""
+          +              "\"precision\": \"10000m\""
           +    "}"
           + "}"
           + "} }";
@@ -165,7 +166,7 @@ public class ElasticPublisher implements AutoCloseable {
        }
        bulkBuilder.addAction(new Index.Builder(metacard).id( id ).build());
        if (bulkBuilder.getQueuedActionsCount() >= config.getMaxBulkIndexingRequests()) {
-           flushBulkRequest(idx);
+          int response = flushBulkRequest(idx);
        }
     }
     
@@ -175,13 +176,16 @@ public class ElasticPublisher implements AutoCloseable {
      * @param idx
      * @throws IOException
      */
-    public void flushBulkRequest(String idx) throws IOException {
+    public int flushBulkRequest(String idx) throws IOException {
+       int response = 0;
        Bulk.Builder bulkBuilder = bulkBuilders.remove( idx );
        //add a check for queue count > 0
        if (bulkBuilder != null) {
           JestResult result = client.execute( bulkBuilder.build() );
-          LOGGER.info("Flush document index request response code:" + result.getResponseCode());
+          response = result.getResponseCode();
+          LOGGER.info("Flush document index request response code:" + response);
        }
+       return response;
     }
     
     public void close() throws Exception {

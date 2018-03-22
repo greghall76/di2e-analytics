@@ -139,8 +139,8 @@ public class ElasticSyncImpl implements ElasticSync {
             response = elasticPublisher.createIndex( idx );
             console.println( "Index create: HTTP Response: " + response );
             if (response == 200) {
-                console.print( "Creating metacard mapping..." );
-                // ensure our mapping is present for any index we create
+                console.print( "Creating metacard mapping... " );
+                //ensure our mapping is present for any index we create
                 response = elasticPublisher.createMetacardMapping(idx);
             }
         } catch (Exception e) {
@@ -171,7 +171,11 @@ public class ElasticSyncImpl implements ElasticSync {
         try (ElasticPublisher elasticPublisher = connect()) {
             syncRecords(elasticPublisher, sourceId, targetIndex, resultProperties, dryRun );
             if (!dryRun) {
-              elasticPublisher.flushBulkRequest( targetIndex );
+              int response = elasticPublisher.flushBulkRequest( targetIndex );
+         LOGGER.info("Flush BulkRequest response:" + response);
+         if (verbose) {
+           console.println("Flush BulkRequest response:" + response);
+         }
             }
         } catch (Exception e) {
             LOGGER.error( "Exception syncing records to Elasticsearch=>" + e );
@@ -194,7 +198,11 @@ public class ElasticSyncImpl implements ElasticSync {
             } );
 
             if ( !dryRun ) {
-                elasticPublisher.flushBulkRequest( targetIndex );
+               int response = elasticPublisher.flushBulkRequest( targetIndex );
+          LOGGER.info("Flush BulkRequest response:" + response);
+          if (verbose) {
+             console.println("Flush BulkRequest response:" + response);
+          }
             }
         } catch ( Exception e ) {
             LOGGER.error( "Exception syncing records to Elasticsearch=>" + e );
