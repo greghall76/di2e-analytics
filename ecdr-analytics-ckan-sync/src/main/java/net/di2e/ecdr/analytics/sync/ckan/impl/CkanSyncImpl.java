@@ -18,8 +18,6 @@ package net.di2e.ecdr.analytics.sync.ckan.impl;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -93,7 +91,6 @@ public class CkanSyncImpl implements CkanSync {
     private FilterBuilder filterBuilder;
     private DibQueryConfiguration syncConfig;
     private CkanConfiguration ckanConfig;
-    private CkanPublisher ckanPublisher;
     private MetacardTransformer geoJsonTransformer;
      
     private Map<String, Serializable> requestProperties;
@@ -118,10 +115,8 @@ public class CkanSyncImpl implements CkanSync {
         LOGGER.info( "CkanSyncImpl is online...." );
     }
     
-    private void connect() throws URISyntaxException, UnknownHostException {
-        if (ckanPublisher == null) {
-            this.ckanPublisher = new CkanPublisher(ckanConfig);
-        }
+    private CkanPublisher connect() {
+      return new CkanPublisher(ckanConfig);
     }
 
     @Override
@@ -135,8 +130,7 @@ public class CkanSyncImpl implements CkanSync {
         boolean success = false;
         
         try {
-            connect();
-            ckanPublisher.createDataset( dataset, ownerOrg );
+            connect().createDataset( dataset, ownerOrg );
             if (verbose) {
               console.println( "Dataset: " + dataset + " created." );
             }
@@ -154,8 +148,7 @@ public class CkanSyncImpl implements CkanSync {
         boolean success = false;
         
         try {
-          connect();
-          ckanPublisher.deleteDataset( dataset );
+          connect().deleteDataset( dataset );
           if (verbose) {
             console.println( "Dataset: " + dataset + " deleted." );
           }
@@ -171,8 +164,7 @@ public class CkanSyncImpl implements CkanSync {
     public List<String> listDatasets() {
         List<String> datasets;
         try {
-            connect();
-            datasets = ckanPublisher.listDatasets();
+            datasets = connect().listDatasets();
         } catch (Exception e) {
             datasets = Collections.emptyList();
             LOGGER.error( "Exception listing datasets=>" + e );
@@ -186,8 +178,7 @@ public class CkanSyncImpl implements CkanSync {
         boolean success = false;
         
         try {
-            connect();
-            ckanPublisher.createOrganization( orgName );
+            connect().createOrganization( orgName );
             if (verbose) {
               console.println( "Organization: " + orgName + " created." );
             }
@@ -203,8 +194,7 @@ public class CkanSyncImpl implements CkanSync {
     public List<String> listOrganizations() {
         List<String> orgs;
         try {
-            connect();
-            orgs = ckanPublisher.listOrganizations();
+            orgs = connect().listOrganizations();
             
         } catch (Exception e) {
             orgs = Collections.emptyList();
@@ -263,7 +253,7 @@ public class CkanSyncImpl implements CkanSync {
         long deltaTime = 0;
         
         try {
-            connect();
+            final CkanPublisher ckanPublisher = connect();
             
             while ( hasMoreRecords ) {
                 long beginTime = System.currentTimeMillis();

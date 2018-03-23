@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.sql.Timestamp;
@@ -42,23 +41,37 @@ public class CkanPublisher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger( CkanPublisher.class );
 
-    private CkanClient client;
+    private CkanConfiguration ckanConfig;
     private File tmpDir = new File("temp");
     
-    public CkanPublisher(CkanConfiguration config) throws URISyntaxException, UnknownHostException {
-        // Construct a new Jackan client according to configuration via factory
-        // See about token use later
-        URI uri = new URI( config.getProtocol().endsWith( "://" ) 
-                           ? config.getProtocol() : config.getProtocol() +  "://" + config.getHost() + ':' + config.getPort());
-        client = CkanClient.builder().setCkanToken( config.getToken() )
-                                     .setCatalogUrl( uri.toString() )
-                                     .setTimeout( config.getTimeout() ).build();
-        LOGGER.info("CKAN publisher initialized with:" + uri);
+    public CkanPublisher(CkanConfiguration config) {
+        this.ckanConfig = config;
         if ( !tmpDir.exists() ) {
            if ( tmpDir.mkdirs() ) {
                LOGGER.info( "Initialized tmp dir for working thumbnail uploads..." );
            }
         }
+    }
+    /**
+     * 
+     * @return
+     */
+    private CkanClient connect() throws CkanException {
+        CkanClient client = null;
+        // Construct a new Jackan client according to configuration via factory
+        String uriStr = ckanConfig.getProtocol().endsWith( "://" ) 
+                ? ckanConfig.getProtocol() : ckanConfig.getProtocol() +  "://" + ckanConfig.getHost() + ':' + ckanConfig.getPort();        
+        try {
+          URI uri = new URI(uriStr);
+          client = CkanClient.builder().setCkanToken( ckanConfig.getToken() )
+                                       .setCatalogUrl( uri.toString() )
+                                       .setTimeout( ckanConfig.getTimeout() ).build();
+          LOGGER.info("CKAN publisher initialized with:" + uri);
+          
+        } catch  (URISyntaxException e) {
+           throw new CkanException("Bad URI for connect given:" + uriStr, null, e);
+        }
+        return client;
     }
     
     /**
@@ -67,7 +80,7 @@ public class CkanPublisher {
      * @throws CkanException
      */
     public List<String> listDatasets() throws CkanException {
-        return client.getDatasetList();
+        return connect().getDatasetList();
     }
 
     /**
@@ -76,7 +89,7 @@ public class CkanPublisher {
      * @throws CkanException
      */
     public List<String> listOrganizations() throws CkanException {
-        return client.getOrganizationNames();
+        return connect().getOrganizationNames();
     }
     
     /**
@@ -94,7 +107,7 @@ public class CkanPublisher {
         // Lots of options here for maintainer, email, create, and licening....
         ckanDs.setName( name );
         ckanDs.setOwnerOrg( ownerOrg );
-        ckanDs = client.createDataset(ckanDs);
+        ckanDs = connect().createDataset(ckanDs);
         LOGGER.info("Created dataset:" + name);
     }
     
@@ -104,7 +117,7 @@ public class CkanPublisher {
      * @throws IOException
      */
     public void deleteDataset( String name ) throws CkanException {
-        client.deleteDataset( name );
+        connect().deleteDataset( name );
         LOGGER.debug("Deleted dataset:" + name);
     }
     
@@ -120,7 +133,7 @@ public class CkanPublisher {
         ckanOrg.setId( orgName ); // I don't think this is a UID
         ckanOrg.setName( orgName );
         ckanOrg.setDescription(" API created ");
-        client.createOrganization( ckanOrg );
+        connect().createOrganization( ckanOrg );
     }
    
     /**
@@ -160,7 +173,7 @@ public class CkanPublisher {
         }
         ckanRs.setFormat( format ); // traditional CKAN options are CSV, XML, JSON...
         ckanRs.setOthers( metacard );
-        client.createResource( ckanRs );
+        connect().createResource( ckanRs );
     }
     
 }

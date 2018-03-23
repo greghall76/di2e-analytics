@@ -28,7 +28,7 @@
         <AD name="Ckan Server Port" id="port" required="true" type="Integer" default="5000"
             description="The port for Ckan sync">
         </AD>
-        <AD name="Ckan API Key/Token" id="token" required="true" type="String" default="beccad11-d514-4cee-81b9-44c23614835f"
+        <AD name="Ckan API Key/Token" id="token" required="true" type="String" default="5653c9c1-e284-42bc-8768-5b26bdc19621"
             description="Create a CKAN user and login to obtain your key from bottom left of profile summary">
         </AD>
         <AD name="Timeout(ms)" id="timeout" required="true" type="Integer" default="10000"
