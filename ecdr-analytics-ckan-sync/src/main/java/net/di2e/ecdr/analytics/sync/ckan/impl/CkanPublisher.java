@@ -19,12 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-//import java.nio.ByteBuffer;
-//import java.nio.channels.FileChannel;
-//import java.nio.file.StandardOpenOption;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -170,7 +169,7 @@ public class CkanPublisher {
         ckanRs.setName( rsrcName );
         ckanRs.setCreated( new Timestamp(timestamp.getTime()) );
 //        if (thumbnail != null && thumbnail.length > 0 ) {
-//            File tmpFile = new File(tmpDir, String.valueOf(id) + "thumb.jpg");
+//            File tmpFile = new File(tmpDir, String.valueOf(rsrcId) + "thumb.jpg");
 //            try {
 //                //NIO write thumbnail to disk
 //                FileChannel.open( tmpFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE ).write( ByteBuffer.wrap( thumbnail ) );
@@ -189,8 +188,28 @@ public class CkanPublisher {
           format = mediaFormat;
         }
         ckanRs.setFormat( format ); // traditional CKAN options are CSV, XML, JSON...
-        ckanRs.setOthers( metacard );
+        Map<String, Object> flatMap = new HashMap<>();
+        buildKeyMap(null, flatMap, metacard);
+        ckanRs.setOthers( flatMap );
         connect().createResource( ckanRs );
     }
-    
+
+    /**
+     * Recursive method to flatten map of maps into . deliminated keys
+     * @param keyBase
+     * @param props
+     * @return
+     */
+    private String buildKeyMap(String keyBase, Map<String, Object> flatMap, Map<String, Object> props) {
+        for (String key : props.keySet()) {
+            String thisKey = keyBase != null ? keyBase + '.' + key : key;
+            Object value  = props.get( key );
+            if (value instanceof Map) {
+                keyBase = buildKeyMap(thisKey, flatMap, (Map<String, Object>) value);
+            } else { // simple key/value found
+                flatMap.put( thisKey, value );
+            }
+        }
+        return keyBase;
+    }
 }
