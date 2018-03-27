@@ -281,9 +281,10 @@ public class CkanSyncImpl implements CkanSync {
                            Map<String, Object> props = (Map<String, Object>)  jsonObject.get( "properties" );
                            props.put( "centroid", center );
                         }
-                        Attribute downloadUrlAttr = metacard.getAttribute( Metacard.RESOURCE_DOWNLOAD_URL );
+                        //Derived resource link is preferred since it's previewable in CKAN
+                        Attribute downloadUrlAttr = metacard.getAttribute( Metacard.DERIVED_RESOURCE_DOWNLOAD_URL );
                         if (downloadUrlAttr == null) {
-                            downloadUrlAttr = metacard.getAttribute( Metacard.DERIVED_RESOURCE_DOWNLOAD_URL );
+                            downloadUrlAttr = metacard.getAttribute( Metacard.RESOURCE_DOWNLOAD_URL );
                         }
                         URI downloadUri = downloadUrlAttr != null ? new URI(downloadUrlAttr.getValue().toString()) : null;
                         docCnt++;
@@ -293,7 +294,7 @@ public class CkanSyncImpl implements CkanSync {
                                                      metacard.getTitle(),
                                                      metacard.getCreatedDate(), 
                                                      metacard.getResourceSize(),  
-                                                     metacard.getContentTypeName(),
+                                                     metacard.getContentTypeName(), // but the legit product mime type still used.
                                                      metacard.getThumbnail(),
                                                      downloadUri,
                                                      jsonObject);
