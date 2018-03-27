@@ -22,6 +22,7 @@ public class CkanConfiguration {
     private String  userId;
     private String  token;
     private Integer timeout;
+    private Integer maxInput;
     
     public String getProtocol() {
         return protocol;
@@ -69,6 +70,14 @@ public class CkanConfiguration {
 
     public void setTimeout( Integer timeout ) {
         this.timeout = timeout;
+    }
+
+    public Integer getMaxInput() {
+        return maxInput;
+    }
+
+    public void setMaxInput( Integer maxInput ) {
+        this.maxInput = maxInput;
     }
 
     

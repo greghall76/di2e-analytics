@@ -46,6 +46,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 
 import ddf.catalog.CatalogFramework;
+import ddf.catalog.data.Attribute;
 import ddf.catalog.data.BinaryContent;
 import ddf.catalog.data.Metacard;
 import ddf.catalog.data.Result;
@@ -150,19 +151,19 @@ public class CkanSyncImpl implements CkanSync {
     }
     
     @Override
-    public boolean deleteDataset(String dataset) {
+    public boolean deleteDataset(String dsNameOrId) {
         
         boolean success = false;
         
         try {
-          connect().deleteDataset( dataset );
+          connect().deleteDataset( dsNameOrId );
           if (verbose) {
-            console.println( "Dataset: " + dataset + " deleted." );
+            console.println( "Dataset: " + dsNameOrId + " deleted." );
           }
           success = true;
         } catch (Exception e) {
           LOGGER.error( "Exception deleting dataset =>" + e );
-          console.print( "Exception deleting dataset:" + dataset + ". See log for details" );
+          console.print( "Exception deleting dataset:" + dsNameOrId + ". See log for details" );
         }
         return success;
     }
@@ -218,12 +219,12 @@ public class CkanSyncImpl implements CkanSync {
     }
     
     @Override
-    public Map<String, String> sync( String sourceId, String dsId, boolean dryRun ) {
+    public Map<String, String> sync( String sourceId, String dsIdOrName, boolean dryRun ) {
         
         long beginMs = System.currentTimeMillis();
         
         HashMap<String, String> resultProperties = new HashMap<>();
-        syncRecords( sourceId, dsId, resultProperties, dryRun );
+        syncRecords( sourceId, dsIdOrName, resultProperties, dryRun );
         
         long delta = System.currentTimeMillis() - beginMs;
         resultProperties.put( "ckan.sync.queue.time.ms", String.valueOf( delta ) );
@@ -236,7 +237,7 @@ public class CkanSyncImpl implements CkanSync {
      * @param sourceId
      * @param resultProperties
      */
-    protected void syncRecords( String sourceId, String dsId, Map<String, String> resultProperties, boolean dryRun ) {
+    protected void syncRecords( String sourceId, String dsIdOrName, Map<String, String> resultProperties, boolean dryRun ) {
         
         console.println( "Querying sync source: " + sourceId );
         
@@ -253,7 +254,7 @@ public class CkanSyncImpl implements CkanSync {
         try {
             final CkanPublisher ckanPublisher = connect();
             
-            while ( hasMoreRecords ) {
+            while ( hasMoreRecords && docCnt < ckanConfig.getMaxInput() ) {
                 long beginTime = System.currentTimeMillis();
                 QueryImpl query = new QueryImpl( getFilter( startDate, endDate, queryKeywords ), 1, maxRecordCount, getSortBy(), true, 300000L );
                 QueryRequestImpl queryRequest = new QueryRequestImpl( query, Arrays.asList( new String[] { sourceId } ) );
@@ -280,16 +281,21 @@ public class CkanSyncImpl implements CkanSync {
                            Map<String, Object> props = (Map<String, Object>)  jsonObject.get( "properties" );
                            props.put( "centroid", center );
                         }
+                        Attribute downloadUrlAttr = metacard.getAttribute( Metacard.RESOURCE_DOWNLOAD_URL );
+                        if (downloadUrlAttr == null) {
+                            downloadUrlAttr = metacard.getAttribute( Metacard.DERIVED_RESOURCE_DOWNLOAD_URL );
+                        }
+                        URI downloadUri = downloadUrlAttr != null ? new URI(downloadUrlAttr.getValue().toString()) : null;
                         docCnt++;
                         if (!dryRun) {
-                          ckanPublisher.addResource( dsId, 
+                          ckanPublisher.addResource( dsIdOrName, 
                                                      metacard.getId(), 
                                                      metacard.getTitle(),
                                                      metacard.getCreatedDate(), 
                                                      metacard.getResourceSize(),  
                                                      metacard.getContentTypeName(),
                                                      metacard.getThumbnail(),
-                                                     metacard.getResourceURI(),
+                                                     downloadUri,
                                                      jsonObject);
                         }
                         deltaTime += System.currentTimeMillis() - beginTime;

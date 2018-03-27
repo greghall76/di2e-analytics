@@ -37,12 +37,12 @@ public interface CkanSync {
     boolean createDataset(String id, String name, String ownerOrg, String uriStr );
     
     /**
-     * Deletes the named dataset in CKAN.
+     * Deletes dataset(s) in CKAN.
      * WARNING. Due to CKAN's implementation, 
-     * @param name
+     * @param dsNameOrId
      * @return - true/success or false/failure
      */
-    boolean deleteDataset(String name);
+    boolean deleteDataset(String dsNameOrId);
     
     /**
      * Takes a listing of datasets present in the CKAN instance.
@@ -69,10 +69,10 @@ public interface CkanSync {
     /**
      * Synchronize the specified DDF source. Configuration of the DDF Query is handled through config pages.
      * @param sourceId
-     * @param dsId - in CKAN dataset ID to post documents into
+     * @param dsNameOrId - CKAN dataset ID or Name to associate resources to
      * @param dryRun - if true, connect to CKAN but don't create resource refs.
      * @return
      */
-    Map<String, String> sync( String sourceId, String dsId, boolean dryRun );
+    Map<String, String> sync( String sourceId, String dsNameOrId, boolean dryRun );
 
 }

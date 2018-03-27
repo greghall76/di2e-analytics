@@ -18,6 +18,7 @@ package net.di2e.ecdr.analytics.sync.ckan.commands;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.karaf.shell.api.action.Action;
@@ -87,18 +88,18 @@ public class CkanDatasetCommand implements Action {
 
                 ids.forEach( ( sourceId ) -> {
                     boolean result;
+                    final String dsId = UUID.randomUUID().toString();
                     // CKAN has restrictions on dataset names that they must be alphanumeric and optionally hyphens and underbars only
-                    final String dsId = sourceId.trim().replace( '.', '-' );
-                    final String dsName = dsId + "-dataset";
+                    final String dsName = sourceId.trim().replace( '.', '-' ) + "-dataset";
                     if ( delete ) {
-                        result = ckanSync.deleteDataset( dsId );
+                        result = ckanSync.deleteDataset( dsName );
                     } else if ( organization != null ) {
                         // FIXME - need dynamic URI lookup
                         String uri = "https://localhost:8993/search/catalog/";
                         if (verbose) {
                            console.println("Creating dataset:" + dsId + '/' + dsName);
                         }
-                        result = ckanSync.createDataset( dsId, dsName, organization, uri );
+                        result = ckanSync.createDataset(dsId, dsName, organization, uri );
                     } else {
                         console.println( "You must provide an organization when creating a dataset" );
                         result = false;

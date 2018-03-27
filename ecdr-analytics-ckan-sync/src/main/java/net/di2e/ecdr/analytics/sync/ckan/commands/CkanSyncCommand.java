@@ -71,8 +71,8 @@ public class CkanSyncCommand implements Action {
             }
             ids.forEach( sourceId -> { 
                 // CKAN has restrictions on dataset names that they must be alphanumeric and optionally hyphens and underbars only
-                final String dsId = sourceId.trim().replace( '.', '-' );
-                Map<String, String> syncResults = ckanSync.sync( sourceId, dsId, dryRun );
+                final String dsName = sourceId.trim().replace( '.', '-' ) + "-dataset";
+                Map<String, String> syncResults = ckanSync.sync( sourceId, dsName, dryRun );
                 for (String key:syncResults.keySet()) {
                    console.println( key + '=' + syncResults.get( key ) );
                 }

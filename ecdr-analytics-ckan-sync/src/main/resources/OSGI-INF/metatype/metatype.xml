@@ -37,6 +37,9 @@
         <AD name="Timeout(ms)" id="timeout" required="true" type="Integer" default="10000"
             description="The timeout for client ReST calls">
         </AD>
+        <AD name="Max Input" id="maxInput" required="true" type="Integer" default="100"
+            description="The maximum amount of record transfered on a dataset sync.">
+        </AD>
     </OCD>
     
     <OCD name="CDR Analytics CKAN Sync DIB Query Config" id="cdr-analytics.ckan.dib.query">

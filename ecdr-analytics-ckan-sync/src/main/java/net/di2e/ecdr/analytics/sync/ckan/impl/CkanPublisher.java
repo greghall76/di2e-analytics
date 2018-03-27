@@ -152,7 +152,7 @@ public class CkanPublisher {
     /**
      * Given the specified dataset, and various attributes required, create a CKAN resource reference in the library back to this product.
      *
-     * @param dsId - dataset id ( for foreign key reference )
+     * @param dsIdOrName - dataset id or name ( for foreign key reference )
      * @param rsrcId - ID for this resource
      * @param rsrcName - name for this resource
      * @param timestamp - create time for resource ref
@@ -163,9 +163,9 @@ public class CkanPublisher {
      * @param metacard
      * @throws IOException
      */
-    public void addResource( String dsId, String rsrcId, String rsrcName, Date timestamp, String size,
+    public void addResource( String dsIdOrName, String rsrcId, String rsrcName, Date timestamp, String size,
                              String contentType, byte[] thumbnail, URI uri, @Deprecated JSONObject metacard) throws IOException {
-        CkanResource ckanRs = new CkanResource(uri != null ? uri.toString() : "", dsId);
+        CkanResource ckanRs = new CkanResource(uri != null ? uri.toString() : "", dsIdOrName);
         ckanRs.setId( rsrcId );
         ckanRs.setName( rsrcName );
         ckanRs.setCreated( new Timestamp(timestamp.getTime()) );
