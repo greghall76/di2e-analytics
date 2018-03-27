@@ -17,9 +17,11 @@ package net.di2e.ecdr.analytics.sync.ckan.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -168,6 +170,7 @@ public class CkanPublisher {
         ckanRs.setId( rsrcId );
         ckanRs.setName( rsrcName );
         ckanRs.setCreated( new Timestamp(timestamp.getTime()) );
+        // Would be nice to make use of the thumbnail but I don't really think I can because it's either upload or link; not both
 //        if (thumbnail != null && thumbnail.length > 0 ) {
 //            File tmpFile = new File(tmpDir, String.valueOf(rsrcId) + "thumb.jpg");
 //            try {
@@ -206,8 +209,24 @@ public class CkanPublisher {
             Object value  = props.get( key );
             if (value instanceof Map) {
                 keyBase = buildKeyMap(thisKey, flatMap, (Map<String, Object>) value);
-            } else { // simple key/value found
-                flatMap.put( thisKey, value );
+            } else if (value.getClass().isArray()) {
+                StringBuffer sb = new StringBuffer();
+                for (int idx = 0; idx < Array.getLength( value ); idx++) {
+                    Object o = Array.get( value, idx );
+                    sb.append(idx > 0 ? ", " : "").append(o == null ? "" : o.toString());
+                }
+                flatMap.put(thisKey, sb.toString());
+            } else if (value instanceof Collection) { // kind of working around JSONArray wanting to escape and ruin URLs
+                StringBuffer sb = new StringBuffer();
+                boolean first = true;
+                for (Object o : (Collection) value) {
+                    sb.append(first ? "" : ", ").append(o == null ? "" : o.toString());
+                    first = false;
+                }
+                flatMap.put(thisKey, sb.toString());
+            } else if (!thisKey.equals( "geometry.properties.thumbnail" )) { // ignore the thumbnail. can't get CKAN to respect it.
+                // simple key/value found
+                flatMap.put( thisKey, value.toString() );
             }
         }
         return keyBase;
