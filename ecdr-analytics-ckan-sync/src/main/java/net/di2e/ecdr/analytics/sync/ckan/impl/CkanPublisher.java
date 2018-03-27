@@ -19,8 +19,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+//import java.nio.ByteBuffer;
+//import java.nio.channels.FileChannel;
+//import java.nio.file.StandardOpenOption;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -66,7 +67,9 @@ public class CkanPublisher {
           client = CkanClient.builder().setCkanToken( ckanConfig.getToken() )
                                        .setCatalogUrl( uri.toString() )
                                        .setTimeout( ckanConfig.getTimeout() ).build();
-          LOGGER.info("CKAN publisher initialized with:" + uri);
+          if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("CKAN publisher initialized with:" + uri);
+          }
           
         } catch  (URISyntaxException e) {
            throw new CkanException("Bad URI for connect given:" + uriStr, null, e);
@@ -93,32 +96,41 @@ public class CkanPublisher {
     }
     
     /**
-     * Create a named dataset
-     * @param name
+     * Create a dataset
+     * @param id - The ID really should be unique because when you delete a dataset in CKAN, it doesn't really delete. Just gets marked inactive.
+     *             Reuse of an ID can cause issues.
+     * @param name - Name for the dataset
+     * @param ownerOrg - owning org ( can be created either manually or through the API )
+     * @param creatorUserId - The creator should be a valid user.
+     * @param uri - A URI for the dataset overall.
      * @throws CkanException
      */
-    public void createDataset( String name, String ownerOrg ) throws CkanException {
+    public void createDataset( String id, String name, String ownerOrg, String creatorUserId, URI uri ) throws CkanException {
         // String settings = "\"settings\" : {\n" +
         // " \"number_of_shards\" : 5,\n" +
         // " \"number_of_replicas\" : 1\n" +
         // " }\n";
         CkanDataset ckanDs = new CkanDataset();
-        ckanDs.setAuthor( "cdr/ckan" );
         // Lots of options here for maintainer, email, create, and licening....
+        ckanDs.setId( id );
         ckanDs.setName( name );
+        ckanDs.setAuthor( creatorUserId );
+        ckanDs.setCreatorUserId( creatorUserId );
         ckanDs.setOwnerOrg( ownerOrg );
+        ckanDs.setUrl( uri != null ? uri.toString() : "" );
+        ckanDs.setMaintainer( "ecdr-analytics" );
         ckanDs = connect().createDataset(ckanDs);
         LOGGER.info("Created dataset:" + name);
     }
     
     /**
-     * Delete the specified dataset
-     * @param name
+     * Delete the specified dataset by wither name or ID
+     * @param nameOrId
      * @throws IOException
      */
-    public void deleteDataset( String name ) throws CkanException {
-        connect().deleteDataset( name );
-        LOGGER.debug("Deleted dataset:" + name);
+    public void deleteDataset( String nameOrId ) throws CkanException {
+        connect().deleteDataset( nameOrId );
+        LOGGER.debug("Deleted dataset:" + nameOrId);
     }
     
     /**
@@ -126,13 +138,14 @@ public class CkanPublisher {
      * @param orgName
      * @throws CkanException
      */
-    public void createOrganization(String orgName) throws CkanException {
+    public void createOrganization(String orgName, String description, URI imageUri) throws CkanException {
         CkanOrganization ckanOrg = new CkanOrganization();
         ckanOrg.setCreated( new Timestamp(System.currentTimeMillis()) );
         ckanOrg.setDisplayName( orgName );
         ckanOrg.setId( orgName ); // I don't think this is a UID
         ckanOrg.setName( orgName );
-        ckanOrg.setDescription(" API created ");
+        ckanOrg.setImageUrl( imageUri != null ? imageUri.toString() : "" );
+        ckanOrg.setDescription( description );
         connect().createOrganization( ckanOrg );
     }
    
@@ -151,17 +164,19 @@ public class CkanPublisher {
      */
     public void addResource(String dataset, String id, Date timestamp, String size, String contentType, byte[] thumbnail, URI uri, JSONObject metacard) throws IOException {
         CkanResource ckanRs = new CkanResource(uri != null ? uri.toString() : "", dataset);
+        ckanRs.setName( id );
+        ckanRs.setId( id );
         ckanRs.setCreated( new Timestamp(timestamp.getTime()) );
-        if (thumbnail != null && thumbnail.length > 0 ) {
-            File tmpFile = new File(tmpDir, String.valueOf(id) + "thumb.png");
-            try {
-                //NIO write thumbnail to disk
-                FileChannel.open( tmpFile.toPath() ).write( ByteBuffer.wrap( thumbnail ) );
-                ckanRs.setUpload( tmpFile, true );
-            } catch (IOException ioE) {
-                LOGGER.error( "Cannot create tmp file for thumbnail:" + tmpFile );
-            }
-        }
+//        if (thumbnail != null && thumbnail.length > 0 ) {
+//            File tmpFile = new File(tmpDir, String.valueOf(id) + "thumb.jpg");
+//            try {
+//                //NIO write thumbnail to disk
+//                FileChannel.open( tmpFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE ).write( ByteBuffer.wrap( thumbnail ) );
+//                ckanRs.setUpload( tmpFile, true );
+//            } catch (IOException ioE) {
+//                LOGGER.error( "Cannot create tmp file for thumbnail:" + tmpFile );
+//            }
+//        }
         ckanRs.setResourceType( "api" ); // options api, file, file.upload ( I believe file.upload is only for UI )
         ckanRs.setSize( size );
         ckanRs.setMimetype( contentType );

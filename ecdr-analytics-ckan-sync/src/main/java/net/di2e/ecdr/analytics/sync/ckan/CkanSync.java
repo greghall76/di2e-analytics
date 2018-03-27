@@ -27,15 +27,18 @@ public interface CkanSync {
     void setVerbose(boolean verbose);
 
     /**
-     * Creates the named dataset in CKAN  ...will add geospatially coherent mapping with type name "metacard"
+     * Creates the named dataset in CKAN
+     * @param id - A unique ID for the dataset
      * @param name - dataset name
      * @param ownerOrg - A valid organization
+     * @param uriStr - URL for the dataset
      * @return - true/success or false/failure
      */
-    boolean createDataset(String name, String ownerOrg);
+    boolean createDataset(String id, String name, String ownerOrg, String uriStr );
     
     /**
-     * Deletes the named dataset in CKAN
+     * Deletes the named dataset in CKAN.
+     * WARNING. Due to CKAN's implementation, 
      * @param name
      * @return - true/success or false/failure
      */
@@ -56,10 +59,12 @@ public interface CkanSync {
     /**
      * Creates a CKAN org which could then own a dataset.
      * You can optionally manually create an org through the UI and then reference it
-     * @param orgName
+     * @param orgName - name/id for the org
+     * @param description - simple description
+     * @param imageUriStr - URL to an icon type image for the org. 
      * @return
      */
-    boolean createOrganization(String orgName);
+    boolean createOrganization(String orgName, String description, String imageUriStr);
     
     /**
      * Synchronize the specified DDF source. Configuration of the DDF Query is handled through config pages.

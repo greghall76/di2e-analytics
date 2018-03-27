@@ -78,7 +78,9 @@ public class ElasticPublisher implements AutoCloseable {
                                .maxTotalConnection(config.getMaxConcurrency())
                                .build());
         client = factory.getObject();
-        LOGGER.info("Elastic publisher initialized with:" + uri);
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("Elastic publisher initialized with:" + uri);
+        }
     }
     
     /**

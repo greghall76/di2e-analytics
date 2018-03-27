@@ -42,7 +42,7 @@ public class ElasticSyncCommand implements Action {
     private static final Logger LOGGER = LoggerFactory.getLogger( ElasticSyncCommand.class );
     static final String SYNC_DIR = "sync";
 
-    @Argument(index = 0, name = "sourceIds", description = "The name of the Source/Site to synchronize", required = false, multiValued = true)
+    @Argument(index = 0, name = "sourceIds", description = "The name of the DIB/DDF Source/Site IDs to synchronize", required = false, multiValued = true)
     @Completion(value = ElasticSyncCompleter.class)
     private List<String> ids;
 

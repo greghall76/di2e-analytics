@@ -18,7 +18,6 @@ package net.di2e.ecdr.analytics.sync.ckan.commands;
 import java.io.PrintStream;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.karaf.shell.api.action.Action;
 import org.apache.karaf.shell.api.action.Argument;
 import org.apache.karaf.shell.api.action.Command;
@@ -29,7 +28,6 @@ import org.apache.karaf.shell.api.action.lifecycle.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ddf.catalog.CatalogFramework;
 import net.di2e.ecdr.analytics.sync.ckan.CkanSync;
 
 @Command(scope = "ckan", name = "org", description = "Creates/deletes organizations in CKAN which can be referenced later to create a dataset."
@@ -39,9 +37,13 @@ public class CkanOrganizationCommand implements Action {
 
     private static final Logger LOGGER = LoggerFactory.getLogger( CkanOrganizationCommand.class );
 
-    @Argument(index = 0, name = "names", description = "The names of the organizations to create/delete", required = false, multiValued = true)
+    @Argument(index = 0, name = "name", description = "The name of the organization to create", required = false)
     @Completion(value = CkanDatasetCompleter.class)
-    private List<String> organizations;
+    private String orgName;
+    
+    @Argument(index = 1, name = "description", description = "The description of the organization to create", required = false, valueToShowInHelp = "description of $orgName")
+    @Completion(value = CkanDatasetCompleter.class)
+    private String description;
     
     @Option(name = "--create", description = "Create an organization and pass the org name")
     private boolean create = true;
@@ -51,9 +53,6 @@ public class CkanOrganizationCommand implements Action {
 
     @Option(name = "--verbose", description = "Provide verbose output to the screen")
     private boolean verbose = false;
-    
-    @Reference
-    private CatalogFramework framework;
     
     @Reference
     private CkanSync ckanSync;
@@ -74,10 +73,11 @@ public class CkanOrganizationCommand implements Action {
                     console.print( org + ',');
                 } );
             } else if ( create ) {
-                if ( CollectionUtils.isNotEmpty( organizations ) ) {
-                    organizations.forEach( orgName -> {
-                        ckanSync.createOrganization( orgName );
-                    } );
+                if (  orgName != null && !orgName.isEmpty() ) {
+                    if ( description == null) {
+                        description = "description of " + orgName;
+                    }
+                    ckanSync.createOrganization( orgName, description, "" );
                 } else {
                     console.print( "You must provide the organization name." );
                 }

@@ -17,6 +17,7 @@ package net.di2e.ecdr.analytics.sync.ckan.commands;
 
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.karaf.shell.api.action.Action;
@@ -39,10 +40,10 @@ public class CkanDatasetCommand implements Action {
 
     private static final Logger LOGGER = LoggerFactory.getLogger( CkanDatasetCommand.class );
 
-    @Argument(index = 0, name = "names", description = "The names of the datasets to create/delete", required = false, multiValued = true)
-    @Completion(value = CkanDatasetCompleter.class)
-    private List<String> datasets;
-
+    @Argument(index = 0, name = "sourceIds", description = "The name of the DIB/DDF Source/Site IDs to synchronize", required = false, multiValued = true)
+    @Completion(value = CkanSyncCompleter.class)
+    private Set<String> ids;
+    
     @Option(name = "--create", description = "Create the dataset")
     private boolean create = true;
     
@@ -79,32 +80,33 @@ public class CkanDatasetCommand implements Action {
                dsetListing.forEach( ds -> {
                   console.print(ds + ',');
                });
-            } else if ( CollectionUtils.isNotEmpty( datasets ) ) {
-                datasets.forEach( dsName -> {
+            } else {
+                if ( CollectionUtils.isEmpty( ids ) ) {
+                    ids = framework.getSourceIds();
+                }
+
+                ids.forEach( ( sourceId ) -> {
                     boolean result;
-                    if (delete) {
-                        result = ckanSync.deleteDataset( dsName );
-                    } else {
-                        if (organization != null) {
-                          result = ckanSync.createDataset( dsName, organization );
+                    // CKAN has restrictions on dataset names that they must be alphanumeric and optionally hyphens and underbars only
+                    final String dsId = sourceId.trim().replace( '.', '-' );
+                    final String dsName = dsId + "-dataset";
+                    if ( organization != null ) {
+                        if ( delete ) {
+                            result = ckanSync.deleteDataset( dsId );
                         } else {
-                          console.println( "You must provide an organization when creating a dataset");
-                          result = false;
+                            // FIXME - need dynamic URI lookup
+                            String uri = "https://localhost:8993/search/catalog/";
+                            if (verbose) {
+                               console.println("Creating dataset:" + dsId + '/' + dsName);
+                            }
+                            result = ckanSync.createDataset( dsId, dsName, organization, uri );
                         }
+                    } else {
+                        console.println( "You must provide an organization when creating a dataset" );
+                        result = false;
                     }
                     console.print( "Success: " + result );
                 } );
-            } else {
-                boolean result;
-                if (delete) {
-                    result = ckanSync.deleteDataset( "metacards" );
-                } else if (organization != null) {
-                    result = ckanSync.createDataset( "metacards", organization );
-                } else {
-                  console.println( "You must provide an organization when creating a dataset");  
-                  result = false;
-                }
-                console.print( "Success: " + result );
             }
         } catch ( Throwable e ) {
             console.println( "Encountered error while trying to perform command. Check log for more details." );

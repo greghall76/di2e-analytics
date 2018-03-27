@@ -264,7 +264,7 @@ public class ElasticSyncImpl implements ElasticSync {
                            Geometry geometry = new WKTReader().read( wkt );
                            Coordinate coord = geometry.getCentroid().getCoordinate();
                            String center = Double.toString( coord.y ) + ',' + Double.toString( coord.x );
-                           Map<String, Object> props = (Map<String, Object>)  jsonObject.get( "properties" );
+                           Map<String, Object> props = (Map<String, Object>) jsonObject.get( "properties" );
                            props.put( "centroid", center );
                         }
                         docCnt++;

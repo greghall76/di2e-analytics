@@ -19,6 +19,7 @@ public class CkanConfiguration {
     private String  protocol;
     private String  host;
     private Integer port;
+    private String  userId;
     private String  token;
     private Integer timeout;
     
@@ -44,6 +45,14 @@ public class CkanConfiguration {
 
     public void setPort( Integer port ) {
         this.port = port;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId( String userId ) {
+        this.userId = userId;
     }
 
     public String getToken() {

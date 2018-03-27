@@ -18,6 +18,7 @@ package net.di2e.ecdr.analytics.sync.ckan.impl;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -125,19 +126,25 @@ public class CkanSyncImpl implements CkanSync {
     }
 
     @Override
-    public boolean createDataset(String dataset, String ownerOrg) {
+    public boolean createDataset(String id, String name, String ownerOrg, String uriStr ) {
         
         boolean success = false;
         
         try {
-            connect().createDataset( dataset, ownerOrg );
+            URI uri;
+            if (uriStr != null) {
+                uri = URI.create( uriStr );
+            } else {
+                uri = null;
+            }
+            connect().createDataset( id, name, ownerOrg, ckanConfig.getUserId(), uri );
             if (verbose) {
-              console.println( "Dataset: " + dataset + " created." );
+              console.println( "Dataset: " + name + " created." );
             }
             success = true;
         } catch (Exception e) {
             LOGGER.error( "Exception creating dataset in ckan=>" + e );
-            console.print( "Exception creating dataset:" + dataset + ". See log for details" );
+            console.print( "Exception creating dataset:" + id + '/' + name + ". See log for details" );
         }
         return success;
     }
@@ -174,11 +181,17 @@ public class CkanSyncImpl implements CkanSync {
     }
     
     @Override
-    public boolean createOrganization(String orgName) {
+    public boolean createOrganization(String orgName, String description, String imageUriStr) {
         boolean success = false;
         
         try {
-            connect().createOrganization( orgName );
+            URI imageUri;
+            if (imageUriStr != null) {
+               imageUri = URI.create( imageUriStr ); 
+            } else {
+                imageUri = null;
+            }
+            connect().createOrganization( orgName, description, imageUri );
             if (verbose) {
               console.println( "Organization: " + orgName + " created." );
             }

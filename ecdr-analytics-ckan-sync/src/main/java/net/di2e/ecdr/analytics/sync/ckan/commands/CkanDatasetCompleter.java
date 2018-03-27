@@ -24,13 +24,14 @@ import org.apache.karaf.shell.api.console.Completer;
 import org.apache.karaf.shell.api.console.Session;
 import org.apache.karaf.shell.support.completers.StringsCompleter;
 
-import net.di2e.ecdr.analytics.sync.ckan.CkanSync;
+import ddf.catalog.CatalogFramework;
 
 @Service
 public class CkanDatasetCompleter implements Completer {
-    
+
     @Reference
-    private CkanSync ckanSync;
+    private CatalogFramework framework;
+    
     /**
      * @param session
      *            the beginning string typed by the user
@@ -41,7 +42,7 @@ public class CkanDatasetCompleter implements Completer {
      */
     public int complete( Session session, CommandLine commandLine, List<String> candidates ) {
         StringsCompleter delegate = new StringsCompleter();
-        delegate.getStrings().addAll( ckanSync.listDatasets() );
+        delegate.getStrings().addAll( framework.getSourceIds() );
         return delegate.complete( session, commandLine, candidates );
     }
 

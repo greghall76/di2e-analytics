@@ -36,7 +36,6 @@ public class CkanOrganizationCompleter implements Completer {
      */
     public int complete( Session session, CommandLine commandLine, List<String> candidates ) {
         StringsCompleter delegate = new StringsCompleter();
-        delegate.getStrings().add( "myorg-name" );
         return delegate.complete( session, commandLine, candidates );
     }
 
