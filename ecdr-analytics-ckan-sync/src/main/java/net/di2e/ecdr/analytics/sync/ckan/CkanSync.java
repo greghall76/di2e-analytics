@@ -69,17 +69,10 @@ public interface CkanSync {
     /**
      * Synchronize the specified DDF source. Configuration of the DDF Query is handled through config pages.
      * @param sourceId
-     * @param dataset - in CKAN to post documents into
+     * @param dsId - in CKAN dataset ID to post documents into
      * @param dryRun - if true, connect to CKAN but don't create resource refs.
      * @return
      */
-    Map<String, String> sync( String sourceId, String dataset, boolean dryRun );
-    
-    /**
-     * Synchronize all DDF sources to the specified CKAN dataset. Configuration of the DDF Query is handles through config pages.
-     * @param dataset - in CKAN to post documents into
-     * @param dryRun - if true, connect to CKAN but don't don't create resource refs.
-     * @return
-     */
-    Map<String, String> syncAll(String dataset, boolean dryRun);
+    Map<String, String> sync( String sourceId, String dsId, boolean dryRun );
+
 }

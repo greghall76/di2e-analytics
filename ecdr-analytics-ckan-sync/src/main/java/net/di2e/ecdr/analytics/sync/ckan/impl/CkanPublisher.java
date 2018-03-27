@@ -152,20 +152,22 @@ public class CkanPublisher {
     /**
      * Given the specified dataset, and various attributes required, create a CKAN resource reference in the library back to this product.
      *
-     * @param dataset
-     * @param id
-     * @param timestamp
-     * @param size
-     * @param contentType
-     * @param thumbnail
-     * @param uri
+     * @param dsId - dataset id ( for foreign key reference )
+     * @param rsrcId - ID for this resource
+     * @param rsrcName - name for this resource
+     * @param timestamp - create time for resource ref
+     * @param size - size of the resource
+     * @param contentType - mime type
+     * @param thumbnail - thumbnail for resource
+     * @param uri - URI to the resource ( optional, but preferred )
      * @param metacard
      * @throws IOException
      */
-    public void addResource(String dataset, String id, Date timestamp, String size, String contentType, byte[] thumbnail, URI uri, JSONObject metacard) throws IOException {
-        CkanResource ckanRs = new CkanResource(uri != null ? uri.toString() : "", dataset);
-        ckanRs.setName( id );
-        ckanRs.setId( id );
+    public void addResource( String dsId, String rsrcId, String rsrcName, Date timestamp, String size,
+                             String contentType, byte[] thumbnail, URI uri, @Deprecated JSONObject metacard) throws IOException {
+        CkanResource ckanRs = new CkanResource(uri != null ? uri.toString() : "", dsId);
+        ckanRs.setId( rsrcId );
+        ckanRs.setName( rsrcName );
         ckanRs.setCreated( new Timestamp(timestamp.getTime()) );
 //        if (thumbnail != null && thumbnail.length > 0 ) {
 //            File tmpFile = new File(tmpDir, String.valueOf(id) + "thumb.jpg");

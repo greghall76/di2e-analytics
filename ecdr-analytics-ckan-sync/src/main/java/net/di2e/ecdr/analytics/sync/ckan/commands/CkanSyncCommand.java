@@ -16,8 +16,8 @@
 package net.di2e.ecdr.analytics.sync.ckan.commands;
 
 import java.io.PrintStream;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.karaf.shell.api.action.Action;
@@ -43,13 +43,7 @@ public class CkanSyncCommand implements Action {
 
     @Argument(index = 0, name = "sourceIds", description = "The name of the Source/Site to synchronize", required = false, multiValued = true)
     @Completion(value = CkanSyncCompleter.class)
-    private List<String> ids;
-
-    @Option(name = "--dataset", description = "Specify --dataset=my_dataset you would like to sync metacards into")
-    private String dataset = "metacards";
-
-//    @Option(name = "--log", description = "Logs metacards to disk under the $DDF_HOME/sync directory")
-//    private boolean log = false;
+    private Set<String> ids;
 
     @Option(name = "--dryrun", description = "Tests the DDF query and prints or logs records as specified in other args. Connects to Elasticsearch without indexing records.")
     private boolean dryRun = false;
@@ -72,22 +66,17 @@ public class CkanSyncCommand implements Action {
         
         try {
             ckanSync.setVerbose( verbose );
-
-            if ( CollectionUtils.isNotEmpty( ids ) ) {
-                ids.forEach( sourceId -> { 
-                    Map<String, String> syncResults = ckanSync.sync( sourceId, dataset, dryRun );
-                    for (String key:syncResults.keySet()) {
-                       console.println( key + '=' + syncResults.get( key ) );
-                    }
-                } );
-            } else {
-               framework.getSourceIds().forEach( ( sourceId ) -> {
-                   Map<String, String> syncResults = ckanSync.sync( sourceId, dataset, dryRun );
-                   for (String key:syncResults.keySet()) {
-                      console.println( key + '=' + syncResults.get( key ) );
-                   }
-               } );
+            if ( CollectionUtils.isEmpty( ids ) ) {
+                ids = framework.getSourceIds();
             }
+            ids.forEach( sourceId -> { 
+                // CKAN has restrictions on dataset names that they must be alphanumeric and optionally hyphens and underbars only
+                final String dsId = sourceId.trim().replace( '.', '-' );
+                Map<String, String> syncResults = ckanSync.sync( sourceId, dsId, dryRun );
+                for (String key:syncResults.keySet()) {
+                   console.println( key + '=' + syncResults.get( key ) );
+                }
+            } );
         } catch ( Exception e ) {
             console.println( "Encountered error while trying to perform command. Check log for more details." );
             LOGGER.warn( "Error while performing command.", e );

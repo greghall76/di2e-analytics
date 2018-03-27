@@ -90,17 +90,15 @@ public class CkanDatasetCommand implements Action {
                     // CKAN has restrictions on dataset names that they must be alphanumeric and optionally hyphens and underbars only
                     final String dsId = sourceId.trim().replace( '.', '-' );
                     final String dsName = dsId + "-dataset";
-                    if ( organization != null ) {
-                        if ( delete ) {
-                            result = ckanSync.deleteDataset( dsId );
-                        } else {
-                            // FIXME - need dynamic URI lookup
-                            String uri = "https://localhost:8993/search/catalog/";
-                            if (verbose) {
-                               console.println("Creating dataset:" + dsId + '/' + dsName);
-                            }
-                            result = ckanSync.createDataset( dsId, dsName, organization, uri );
+                    if ( delete ) {
+                        result = ckanSync.deleteDataset( dsId );
+                    } else if ( organization != null ) {
+                        // FIXME - need dynamic URI lookup
+                        String uri = "https://localhost:8993/search/catalog/";
+                        if (verbose) {
+                           console.println("Creating dataset:" + dsId + '/' + dsName);
                         }
+                        result = ckanSync.createDataset( dsId, dsName, organization, uri );
                     } else {
                         console.println( "You must provide an organization when creating a dataset" );
                         result = false;

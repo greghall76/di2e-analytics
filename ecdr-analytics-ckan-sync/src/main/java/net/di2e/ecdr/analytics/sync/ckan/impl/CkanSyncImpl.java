@@ -218,28 +218,13 @@ public class CkanSyncImpl implements CkanSync {
     }
     
     @Override
-    public Map<String, String> sync( String sourceId, String dataset, boolean dryRun ) {
+    public Map<String, String> sync( String sourceId, String dsId, boolean dryRun ) {
         
         long beginMs = System.currentTimeMillis();
         
         HashMap<String, String> resultProperties = new HashMap<>();
-        syncRecords( sourceId, dataset, resultProperties, dryRun );
+        syncRecords( sourceId, dsId, resultProperties, dryRun );
         
-        long delta = System.currentTimeMillis() - beginMs;
-        resultProperties.put( "ckan.sync.queue.time.ms", String.valueOf( delta ) );
-        
-        return resultProperties;
-    }
-
-    @Override
-    public Map<String, String> syncAll(String dataset, boolean dryRun) {
-        
-        long beginMs = System.currentTimeMillis();
-        
-        HashMap<String, String> resultProperties = new HashMap<>();
-        framework.getSourceIds().forEach( ( sourceId ) -> {
-            syncRecords( sourceId, dataset, resultProperties, dryRun );
-        } );
         long delta = System.currentTimeMillis() - beginMs;
         resultProperties.put( "ckan.sync.queue.time.ms", String.valueOf( delta ) );
         
@@ -251,7 +236,7 @@ public class CkanSyncImpl implements CkanSync {
      * @param sourceId
      * @param resultProperties
      */
-    protected void syncRecords( String sourceId, String dataset, Map<String, String> resultProperties, boolean dryRun ) {
+    protected void syncRecords( String sourceId, String dsId, Map<String, String> resultProperties, boolean dryRun ) {
         
         console.println( "Querying sync source: " + sourceId );
         
@@ -297,7 +282,9 @@ public class CkanSyncImpl implements CkanSync {
                         }
                         docCnt++;
                         if (!dryRun) {
-                          ckanPublisher.addResource( dataset, metacard.getId(), 
+                          ckanPublisher.addResource( dsId, 
+                                                     metacard.getId(), 
+                                                     metacard.getTitle(),
                                                      metacard.getCreatedDate(), 
                                                      metacard.getResourceSize(),  
                                                      metacard.getContentTypeName(),
