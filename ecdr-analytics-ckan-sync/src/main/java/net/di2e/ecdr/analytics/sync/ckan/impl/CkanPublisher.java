@@ -214,26 +214,32 @@ public class CkanPublisher {
         for (String key : props.keySet()) {
             String thisKey = keyBase != null ? keyBase + '.' + key : key;
             Object value  = props.get( key );
-            if (value instanceof Map) {
-                keyBase = buildKeyMap(thisKey, flatMap, (Map<String, Object>) value);
-            } else if (value.getClass().isArray()) {
-                StringBuffer sb = new StringBuffer();
-                for (int idx = 0; idx < Array.getLength( value ); idx++) {
-                    Object o = Array.get( value, idx );
-                    sb.append(idx > 0 ? ", " : "").append(o == null ? "" : o.toString());
+            if (value != null) {
+                if (value instanceof Map) {
+                    keyBase = buildKeyMap(thisKey, flatMap, (Map<String, Object>) value);
+                } else if (value.getClass().isArray()) {
+                    StringBuffer sb = new StringBuffer();
+                    for (int idx = 0; idx < Array.getLength( value ); idx++) {
+                        Object o = Array.get( value, idx );
+                        if (o != null) {
+                          sb.append(idx > 0 ? ", " : "").append(o.toString());
+                        }
+                    }
+                    flatMap.put(thisKey, sb.toString());
+                } else if (value instanceof Collection) { // kind of working around JSONArray wanting to escape and ruin URLs
+                    StringBuffer sb = new StringBuffer();
+                    boolean first = true;
+                    for (Object o : (Collection) value) {
+                        if (o != null) {
+                          sb.append(first ? "" : ", ").append(o.toString());
+                        }
+                        first = false;
+                    }
+                    flatMap.put(thisKey, sb.toString());
+                } else if (!thisKey.equals( "geometry.properties.thumbnail" )) { // ignore the thumbnail. can't get CKAN to respect it.
+                    // simple key/value found
+                    flatMap.put( thisKey, value.toString() );
                 }
-                flatMap.put(thisKey, sb.toString());
-            } else if (value instanceof Collection) { // kind of working around JSONArray wanting to escape and ruin URLs
-                StringBuffer sb = new StringBuffer();
-                boolean first = true;
-                for (Object o : (Collection) value) {
-                    sb.append(first ? "" : ", ").append(o == null ? "" : o.toString());
-                    first = false;
-                }
-                flatMap.put(thisKey, sb.toString());
-            } else if (!thisKey.equals( "geometry.properties.thumbnail" )) { // ignore the thumbnail. can't get CKAN to respect it.
-                // simple key/value found
-                flatMap.put( thisKey, value.toString() );
             }
         }
         return keyBase;

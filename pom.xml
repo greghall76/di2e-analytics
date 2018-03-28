@@ -712,6 +712,7 @@
     </pluginRepositories>
 	
     <modules>
+        <module>ecdr-analytics-util</module>
         <module>ecdr-analytics-ckan-sync</module>
         <module>ecdr-analytics-elastic-sync</module>
         <module>ecdr-analytics-app</module>

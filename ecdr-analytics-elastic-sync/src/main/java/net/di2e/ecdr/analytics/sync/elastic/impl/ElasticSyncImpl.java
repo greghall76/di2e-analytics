@@ -60,6 +60,8 @@ import ddf.catalog.transform.MetacardTransformer;
 import ddf.security.Subject;
 import net.di2e.ecdr.analytics.sync.elastic.ElasticSync;
 import net.di2e.ecdr.analytics.sync.elastic.config.ElasticConfiguration;
+import net.di2e.ecdr.analytics.util.TemporalBoundsTracker;
+import net.di2e.ecdr.analytics.util.TemporalCoverageHolder;
 import net.di2e.ecdr.analytics.sync.elastic.config.DibQueryConfiguration;
 
 public class ElasticSyncImpl implements ElasticSync {
@@ -96,7 +98,7 @@ public class ElasticSyncImpl implements ElasticSync {
     private MetacardTransformer geoJsonTransformer;
      
     private Map<String, Serializable> requestProperties;
-    
+    private TemporalBoundsTracker temporalBoundsTracker = new TemporalBoundsTracker();
     private final JSONParser jsonParser = new JSONParser();
     
     private PrintStream console = System.out;
@@ -247,14 +249,22 @@ public class ElasticSyncImpl implements ElasticSync {
                 QueryResponse response = framework.query( queryRequest );
 
                 List<Result> results = response.getResults();
+                // Start date required since time series is the only way to segment results.
                 hasMoreRecords = (results.size() == maxRecordCount) && startDate != null;
-                console.printf( "Synchronizing query results for %d records from site %s", Integer.valueOf( results.size() ), sourceId );
+                console.printf( "Synchronizing query results for %d records from site %s\n", Integer.valueOf( results.size() ), sourceId );
                 LOGGER.debug( "Synchronizing query results for {} records from site {} in the Content Collection date range [{} - {}] and keywords[{}]",
                                Integer.valueOf( results.size() ), sourceId, startDate, endDate, queryKeywords );
 
                 for ( Result result : results ) {
                     try {
                         Metacard metacard = result.getMetacard();
+                        // Track max bounds seen as a way to ensure segmented increment through total result set possible
+                        temporalBoundsTracker.updateBounds( metacard );
+                        // Walk start date in case of a secondary query
+                        TemporalCoverageHolder timeWindowProcessed = temporalBoundsTracker.getTemporalCoverageHolder( syncConfig.getDateType() );
+                        if (timeWindowProcessed != null) {
+                          startDate = timeWindowProcessed.getEndDate();
+                        }
                         BinaryContent binContent = geoJsonTransformer.transform( metacard, requestProperties );
                         JSONObject jsonObject = (JSONObject) jsonParser.parse( new InputStreamReader(binContent.getInputStream()) );
                         // See about inserting a centroid for Elastic to have a simple geo_point since it's charts struggle w/ shapes

@@ -15,21 +15,15 @@
       <artifactId>analytics</artifactId>
       <version>1.0</version>
    </parent>
-   <name>Enterprise CDR :: Analytics :: CKAN :: Sync</name>
+   <name>Enterprise CDR :: Analytics :: Util</name>
    <groupId>net.di2e.ecdr.analytics</groupId>
-   <artifactId>ecdr-analytics-ckan-sync</artifactId>
+   <artifactId>ecdr-analytics-util</artifactId>
    <packaging>bundle</packaging>
 
    <properties>
-      <jackan.client.version>0.4.3-SNAPSHOT</jackan.client.version>
    </properties>
 
    <dependencies>
-      <dependency>
-         <groupId>net.di2e.ecdr.analytics</groupId>
-         <artifactId>ecdr-analytics-util</artifactId>
-         <version>1.0</version>
-      </dependency>
       <dependency>
          <groupId>ddf.platform.api</groupId>
          <artifactId>platform-api</artifactId>
@@ -47,11 +41,6 @@
          <artifactId>catalog-core-api-impl</artifactId>
       </dependency>
       <dependency>
-         <groupId>ddf.catalog.transformer</groupId>
-         <artifactId>geojson-metacard-transformer</artifactId>
-         <version>${ddf.version}</version>
-      </dependency>
-      <dependency>
           <groupId>ddf.security.core</groupId>
           <artifactId>security-core-impl</artifactId>
           <version>${ddf.version}</version>
@@ -66,81 +55,6 @@
          <artifactId>security-handler-api</artifactId>
          <version>${ddf.version}</version>
       </dependency>
-      <dependency>
-         <groupId>org.apache.httpcomponents</groupId>
-         <artifactId>httpcore</artifactId>
-         <version>4.4.9</version>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.httpcomponents</groupId>
-         <artifactId>httpcore-nio</artifactId>
-         <version>4.4.9</version>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.httpcomponents</groupId>
-         <artifactId>httpclient</artifactId>
-         <version>4.5.3</version>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.httpcomponents</groupId>
-         <artifactId>httpasyncclient</artifactId>
-         <version>4.1.2</version>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.karaf.shell</groupId>
-         <artifactId>org.apache.karaf.shell.console</artifactId>
-         <version>${karaf.version}</version>
-         <exclusions>
-            <exclusion>
-               <groupId>org.apache.karaf.jaas</groupId>
-               <artifactId>org.apache.karaf.jaas.boot</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency> 
-      <dependency>
-         <groupId>joda-time</groupId>
-         <artifactId>joda-time</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.geotools</groupId>
-         <artifactId>gt-opengis</artifactId>
-         <version>8.4</version>
-      </dependency>
-      <dependency>
-         <groupId>com.googlecode.json-simple</groupId>
-         <artifactId>json-simple</artifactId>
-         <version>1.1.1</version>
-      </dependency>
-      <dependency>
-         <groupId>com.google.code.gson</groupId>
-         <artifactId>gson</artifactId>
-         <version>2.8.2</version>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.cxf</groupId>
-         <artifactId>cxf-rt-rs-client</artifactId>
-         <scope>provided</scope>
-         <exclusions>
-           <exclusion>
-             <artifactId>servlet-api</artifactId>
-             <groupId>javax.servlet</groupId>
-           </exclusion>
-           <exclusion>
-             <groupId>org.apache.santuario</groupId>
-             <artifactId>xmlsec</artifactId>
-           </exclusion>
-         </exclusions>
-       </dependency>
-       <dependency>
-         <groupId>eu.trentorise.opendata</groupId>
-         <artifactId>jackan</artifactId>
-	     <version>${jackan.client.version}</version>
-      </dependency>
-	  <dependency>
-		<groupId>eu.trentorise.opendata</groupId>
-		<artifactId>tod-commons</artifactId>
-		<version>1.1.0</version>
-	  </dependency>
    </dependencies>
 
    <build>
@@ -170,9 +84,6 @@
                   <Bundle-Version>1.0</Bundle-Version>
                   <Embed-Transitive>true</Embed-Transitive>
                   <Embed-Dependency>
-                     gson,
-                     jackan,
-                     tod-commons,
                      catalog-core-api-impl,
                      platform-api,
                      platform-util,
@@ -186,12 +97,9 @@
                      *;resolution:=optional
                   </Import-Package>
                   <Export-Package>
-                     net.di2e.ecdr.analytics.sync.ckan,
-                     net.di2e.ecdr.analytics.sync.ckan.config,
-                     net.di2e.ecdr.analytics.sync.ckan.commands
+                     net.di2e.ecdr.analytics.util
                   </Export-Package>
                   <Private-Package>
-                     net.di2e.ecdr.analytics.sync.ckan.impl
                   </Private-Package>
                </instructions>
             </configuration>

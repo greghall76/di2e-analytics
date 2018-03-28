@@ -26,6 +26,16 @@
 
    <dependencies>
       <dependency>
+         <groupId>net.di2e.ecdr.analytics</groupId>
+         <artifactId>ecdr-analytics-util</artifactId>
+         <version>1.0</version>
+      </dependency>
+      <dependency>
+         <groupId>net.di2e.ecdr.analytics</groupId>
+         <artifactId>ecdr-analytics-util</artifactId>
+         <version>1.0</version>
+      </dependency>
+      <dependency>
          <groupId>ddf.platform.api</groupId>
          <artifactId>platform-api</artifactId>
       </dependency>

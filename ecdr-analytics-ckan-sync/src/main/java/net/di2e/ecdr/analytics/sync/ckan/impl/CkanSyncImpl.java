@@ -60,6 +60,8 @@ import ddf.security.Subject;
 import net.di2e.ecdr.analytics.sync.ckan.CkanSync;
 import net.di2e.ecdr.analytics.sync.ckan.config.CkanConfiguration;
 import net.di2e.ecdr.analytics.sync.ckan.config.DibQueryConfiguration;
+import net.di2e.ecdr.analytics.util.TemporalBoundsTracker;
+import net.di2e.ecdr.analytics.util.TemporalCoverageHolder;
 
 public class CkanSyncImpl implements CkanSync {
     
@@ -95,7 +97,7 @@ public class CkanSyncImpl implements CkanSync {
     private MetacardTransformer geoJsonTransformer;
      
     private Map<String, Serializable> requestProperties;
-    
+    private TemporalBoundsTracker temporalBoundsTracker = new TemporalBoundsTracker();
     private final JSONParser jsonParser = new JSONParser();
     
     private PrintStream console = System.out;
@@ -266,14 +268,22 @@ public class CkanSyncImpl implements CkanSync {
                 QueryResponse response = framework.query( queryRequest );
 
                 List<Result> results = response.getResults();
+                // Start date required since time series is the only way to segment results.
                 hasMoreRecords = (results.size() == maxRecordCount) && startDate != null;
-                console.printf( "Synchronizing query results for %d records from site %s", Integer.valueOf( results.size() ), sourceId );
+                console.printf( "Synchronizing query results for %d records from site %s\n", Integer.valueOf( results.size() ), sourceId );
                 LOGGER.debug( "Synchronizing query results for {} records from site {} in the Content Collection date range [{} - {}] and keywords[{}]",
                                Integer.valueOf( results.size() ), sourceId, startDate, endDate, queryKeywords );
 
                 for ( Result result : results ) {
                     try {
                         Metacard metacard = result.getMetacard();
+                        // Track max bounds seen as a way to ensure segmented increment through total result set possible
+                        temporalBoundsTracker.updateBounds( metacard );
+                        // Walk start date in case of a secondary query
+                        TemporalCoverageHolder timeWindowProcessed = temporalBoundsTracker.getTemporalCoverageHolder( syncConfig.getDateType() );
+                        if (timeWindowProcessed != null) {
+                          startDate = timeWindowProcessed.getEndDate();
+                        }
                         BinaryContent binContent = geoJsonTransformer.transform( metacard, requestProperties );
                         JSONObject jsonObject = (JSONObject) jsonParser.parse( new InputStreamReader(binContent.getInputStream()) );
                         // See CKAN support for geo_points with http://extensions.ckan.org/extension/spatial/
@@ -307,7 +317,6 @@ public class CkanSyncImpl implements CkanSync {
                         if (verbose) {
                             console.println("Queued:" + jsonObject.toJSONString());
                         }
-                            
                     } catch ( Exception e ) {
                         LOGGER.error( "Error handling result {} ", result.getMetacard().getId(), e );
                         console.printf( "Error handling result {} with Exception {} ", result.getMetacard().getId(), e.getLocalizedMessage() );
