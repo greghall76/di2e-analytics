@@ -213,7 +213,7 @@ public class CkanPublisher {
     private String buildKeyMap(String keyBase, Map<String, Object> flatMap, Map<String, Object> props) {
         for (String key : props.keySet()) {
             String thisKey = keyBase != null ? keyBase + '.' + key : key;
-            Object value  = props.get( key );
+            Object value   = props.get( key );
             if (value != null) {
                 if (value instanceof Map) {
                     keyBase = buildKeyMap(thisKey, flatMap, (Map<String, Object>) value);
@@ -236,7 +236,10 @@ public class CkanPublisher {
                         first = false;
                     }
                     flatMap.put(thisKey, sb.toString());
-                } else if (!thisKey.equals( "geometry.properties.thumbnail" )) { // ignore the thumbnail. can't get CKAN to respect it.
+                } else if (!thisKey.equals( "geometry.properties.thumbnail" )
+                           && !thisKey.equals( "geometry.properties.metadata" )) {
+                    // ignore the thumbnail. can't get CKAN to respect it.
+                    // ignore the metadata XML as it's redundant   
                     // simple key/value found
                     flatMap.put( thisKey, value.toString() );
                 }
