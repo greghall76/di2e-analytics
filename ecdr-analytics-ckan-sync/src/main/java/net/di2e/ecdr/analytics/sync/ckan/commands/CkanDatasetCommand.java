@@ -16,7 +16,9 @@
 package net.di2e.ecdr.analytics.sync.ckan.commands;
 
 import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -99,7 +101,9 @@ public class CkanDatasetCommand implements Action {
                         if (verbose) {
                            console.println("Creating dataset:" + dsId + '/' + dsName);
                         }
-                        result = ckanSync.createDataset(dsId, dsName, organization, uri );
+                        Map<String, String> props = new HashMap<>();
+                        props.put("source.id", sourceId);
+                        result = ckanSync.createDataset(dsId, dsName, organization, uri, props );
                     } else {
                         console.println( "You must provide an organization when creating a dataset" );
                         result = false;

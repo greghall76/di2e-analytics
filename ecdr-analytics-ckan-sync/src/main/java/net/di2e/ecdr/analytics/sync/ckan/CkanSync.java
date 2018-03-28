@@ -18,8 +18,15 @@ package net.di2e.ecdr.analytics.sync.ckan;
 import java.util.List;
 import java.util.Map;
 
+import net.di2e.ecdr.analytics.sync.ckan.config.CkanConfiguration;
+
 public interface CkanSync {
     
+    /**
+     * Get the config driving this sync instance
+     * @return
+     */
+    CkanConfiguration getCkanConfig();
     /**
      * If verbose, Json formatted documents to be pushed to CKAN are echoed to the console.
      * @param verbose
@@ -32,9 +39,10 @@ public interface CkanSync {
      * @param name - dataset name
      * @param ownerOrg - A valid organization
      * @param uriStr - URL for the dataset
+     * @param props - searchable key/value props for the dataset
      * @return - true/success or false/failure
      */
-    boolean createDataset(String id, String name, String ownerOrg, String uriStr );
+    boolean createDataset(String id, String name, String ownerOrg, String uriStr, Map<String, String> props);
     
     /**
      * Deletes dataset(s) in CKAN.

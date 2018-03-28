@@ -37,7 +37,6 @@ import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Node;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -117,17 +116,22 @@ public class CkanSyncImpl implements CkanSync {
         LOGGER.info( "CkanSyncImpl is online...." );
     }
     
-    private CkanPublisher connect() {
-      return new CkanPublisher(ckanConfig);
+    @Override
+    public CkanConfiguration getCkanConfig() {
+       return ckanConfig; 
     }
 
     @Override
     public void setVerbose( boolean verbose ) {
       this.verbose = verbose;
     }
-
+    
+    private CkanPublisher connect() {
+      return new CkanPublisher(ckanConfig);
+    }
+    
     @Override
-    public boolean createDataset(String id, String name, String ownerOrg, String uriStr ) {
+    public boolean createDataset(String id, String name, String ownerOrg, String uriStr, Map<String, String> props ) {
         
         boolean success = false;
         
@@ -138,7 +142,7 @@ public class CkanSyncImpl implements CkanSync {
             } else {
                 uri = null;
             }
-            connect().createDataset( id, name, ownerOrg, ckanConfig.getUserId(), uri );
+            connect().createDataset( id, name, ownerOrg, ckanConfig.getUserId(), uri, props);
             if (verbose) {
               console.println( "Dataset: " + name + " created." );
             }
@@ -318,15 +322,6 @@ public class CkanSyncImpl implements CkanSync {
             resultProperties.put( "ckan.doc.queue.count",  String.valueOf( docCnt ) );
             resultProperties.put( "ckan.doc.queue.time.ms", String.valueOf( deltaTime ) );
         }
-    }
-
-    private String getAttributeValue( Node item, String namespace, String attribute ) {
-        String attributeValue = null;
-        Node node = item.getAttributes().getNamedItemNS( namespace, attribute );
-        if ( node != null ) {
-            attributeValue = node.getTextContent();
-        }
-        return attributeValue;
     }
 
     protected Filter getFilter( Date startDate, Date endDate, String keywords ) {

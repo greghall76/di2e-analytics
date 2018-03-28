@@ -36,6 +36,7 @@ import eu.trentorise.opendata.jackan.CkanClient;
 import eu.trentorise.opendata.jackan.exceptions.CkanException;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanOrganization;
+import eu.trentorise.opendata.jackan.model.CkanPair;
 import eu.trentorise.opendata.jackan.model.CkanResource;
 import net.di2e.ecdr.analytics.sync.ckan.config.CkanConfiguration;
 
@@ -104,9 +105,10 @@ public class CkanPublisher {
      * @param ownerOrg - owning org ( can be created either manually or through the API )
      * @param creatorUserId - The creator should be a valid user.
      * @param uri - A URI for the dataset overall.
+     * @param props - searchable key/value pairs for dataset
      * @throws CkanException
      */
-    public void createDataset( String id, String name, String ownerOrg, String creatorUserId, URI uri ) throws CkanException {
+    public void createDataset( String id, String name, String ownerOrg, String creatorUserId, URI uri, Map<String, String> props) throws CkanException {
         // String settings = "\"settings\" : {\n" +
         // " \"number_of_shards\" : 5,\n" +
         // " \"number_of_replicas\" : 1\n" +
@@ -118,8 +120,13 @@ public class CkanPublisher {
         ckanDs.setAuthor( creatorUserId );
         ckanDs.setCreatorUserId( creatorUserId );
         ckanDs.setOwnerOrg( ownerOrg );
+        ckanDs.setPriv( Boolean.TRUE ); // Doesn't seem to work
         ckanDs.setUrl( uri != null ? uri.toString() : "" );
         ckanDs.setMaintainer( "ecdr-analytics" );
+        // searchable key/value pair attributes of the dataset
+        for (String key : props.keySet()) {
+          ckanDs.addExtras( new CkanPair(key, props.get( key )) );
+        }
         ckanDs = connect().createDataset(ckanDs);
         LOGGER.info("Created dataset:" + name);
     }

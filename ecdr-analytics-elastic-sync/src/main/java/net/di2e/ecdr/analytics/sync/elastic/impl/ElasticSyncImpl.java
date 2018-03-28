@@ -39,7 +39,6 @@ import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Node;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -295,15 +294,6 @@ public class ElasticSyncImpl implements ElasticSync {
             resultProperties.put( "elastic.doc.queue.count",  String.valueOf( docCnt ) );
             resultProperties.put( "elastic.doc.queue.time.ms", String.valueOf( deltaTime ) );
         }
-    }
-
-    private String getAttributeValue( Node item, String namespace, String attribute ) {
-        String attributeValue = null;
-        Node node = item.getAttributes().getNamedItemNS( namespace, attribute );
-        if ( node != null ) {
-            attributeValue = node.getTextContent();
-        }
-        return attributeValue;
     }
 
     protected Filter getFilter( Date startDate, Date endDate, String keywords ) {
