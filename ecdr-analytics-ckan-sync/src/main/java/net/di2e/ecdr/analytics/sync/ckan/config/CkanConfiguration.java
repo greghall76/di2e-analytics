@@ -23,6 +23,7 @@ public class CkanConfiguration {
     private String  token;
     private Integer timeout;
     private Integer maxInput;
+    private String  collectionProperty;
     
     public String getProtocol() {
         return protocol;
@@ -78,6 +79,14 @@ public class CkanConfiguration {
 
     public void setMaxInput( Integer maxInput ) {
         this.maxInput = maxInput;
+    }
+
+    public String getCollectionProperty() {
+        return collectionProperty;
+    }
+
+    public void setCollectionProperty( String collectionProperty ) {
+        this.collectionProperty = collectionProperty;
     }
 
     

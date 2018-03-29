@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 import org.codice.ddf.security.common.Security;
@@ -49,11 +50,14 @@ import ddf.catalog.data.Attribute;
 import ddf.catalog.data.BinaryContent;
 import ddf.catalog.data.Metacard;
 import ddf.catalog.data.Result;
+import ddf.catalog.federation.FederationException;
 import ddf.catalog.filter.FilterBuilder;
 import ddf.catalog.filter.impl.SortByImpl;
 import ddf.catalog.operation.QueryResponse;
 import ddf.catalog.operation.impl.QueryImpl;
 import ddf.catalog.operation.impl.QueryRequestImpl;
+import ddf.catalog.source.SourceUnavailableException;
+import ddf.catalog.source.UnsupportedQueryException;
 import ddf.catalog.transform.MetacardTransformer;
 
 import ddf.security.Subject;
@@ -75,12 +79,7 @@ public class CkanSyncImpl implements CkanSync {
 
     private static final Logger LOGGER = LoggerFactory.getLogger( CkanSyncImpl.class );
 //    private static DateFormat df = new SimpleDateFormat( "yyyy-MM-dd\'T\'HH:mm:ss.SSSZ" );
-// 
-//    private static final String RESULT_WKT = "result-wkt";
-//    private static final String XPATH_KEYWORD = "//*[local-name()=\'keyword\']";
-//    private static final String XPATH_CATEGORY = "//*[local-name()=\'category\']";
-//    private static final String XPATH_TYPE = "//ddms:type";
-//    private static final String XPATH_SECURITY = "//*[local-name()=\'security\']";
+
     private static final String DDMS_NAMESPACE = "http://metadata.dod.mil/mdr/ns/DDMS/2.0/";
     private static final String ICISM_NAMESPACE = "urn:us:gov:ic:ism:v2";
 //    private static final String VALUE_ATTRIBUTE = "value";
@@ -132,6 +131,85 @@ public class CkanSyncImpl implements CkanSync {
       return new CkanPublisher(ckanConfig);
     }
     
+    @Override
+    public boolean createDatasets(String sourceId, String ownerOrg, String uriStr, Map<String, String> props, boolean andSync ) {
+        return createDatasets(sourceId, ckanConfig.getCollectionProperty(), ownerOrg, uriStr, props, andSync);
+    }
+    
+    @Override
+    public boolean createDatasets(String sourceId, String splitProperty,  String ownerOrg, String uriStr, Map<String, String> props, boolean andSync ) {
+
+        boolean success = true;
+        
+        boolean hasMoreRecords = true;
+
+        Date startDate = StringUtils.isBlank( syncConfig.getStartDate() ) ? null 
+                                              : formatter.parseDateTime( syncConfig.getStartDate() ).toDate();
+        Date endDate = new Date();
+        int maxRecordCount = syncConfig.getMaxRecordsPerPoll();
+        int docCnt = 0;
+    
+        temporalBoundsTracker.clear();
+        long beginTime = System.currentTimeMillis();
+        
+        try {
+            final CkanPublisher ckanPublisher = connect();
+            List<String> datasets = listDatasets();
+            
+            while ( hasMoreRecords && docCnt < ckanConfig.getMaxInput() ) {
+
+                QueryResponse response = dibQuery(sourceId, startDate, endDate);
+                List<Result> results = response.getResults();
+                
+                // Start date required since time series is the only way to segment results.
+                hasMoreRecords = (results.size() == maxRecordCount) && startDate != null;
+                console.printf( "Synchronizing query results for %d records from site %s\n", Integer.valueOf( results.size() ), sourceId );
+                LOGGER.debug( "Synchronizing query results for {} records from site {} in the Content Collection date range [{} - {}] and keywords[{}]",
+                               Integer.valueOf( results.size() ), sourceId, startDate, endDate, syncConfig.getKeywords() );
+            
+                for (Result result : results) {
+                   docCnt++;
+
+                   Metacard metacard = result.getMetacard();
+                   Attribute splitPropAttrib = metacard.getAttribute( splitProperty );
+                   if (splitPropAttrib != null) {
+                      //Must be a simple primitive for collection split
+                      String splitPropVal = splitPropAttrib.getValue().toString().toLowerCase();
+                      String datasetName = sourceId.trim().replace( '.', '-' ) + "-" + splitPropVal + "-dataset";
+                      if (!datasets.contains( datasetName )) {
+                          //create the dataset
+                          String dsUid = UUID.randomUUID().toString();
+                          //this is a little hackey. Might not always work but need a unique URL for CKAN
+                          String dsUrl = uriStr + "?source.id=" + sourceId + "&" + splitProperty + "=" + splitPropVal;
+                          if (createDataset(dsUid, datasetName, ownerOrg, dsUrl, props)) {
+                              datasets.add( datasetName );
+                          }
+                      }
+                      if (andSync) {
+                         createResource(ckanPublisher, datasetName, metacard);
+                      }
+                   } 
+
+                   // Track max bounds seen as a way to ensure segmented increment through total result set possible
+                   temporalBoundsTracker.updateBounds( metacard );
+                   // Walk start date in case of a secondary query
+                   TemporalCoverageHolder timeWindowProcessed = temporalBoundsTracker.getTemporalCoverageHolder( syncConfig.getDateType() );
+                   if (timeWindowProcessed != null) {
+                     startDate = timeWindowProcessed.getEndDate();
+                   }
+                }
+            }
+        } catch ( Throwable arg34 ) {
+            LOGGER.warn( "Query failed against source {}", sourceId, arg34 );
+            success = false;
+        } finally {
+            long deltaTime = System.currentTimeMillis() - beginTime;
+            LOGGER.info( "Synchronized:" + docCnt + " records in " + String.valueOf(((double) deltaTime) / 1000.0) + "(s)");
+            console.println( "Synchronized:" + docCnt + " records in " + String.valueOf(((double) deltaTime) / 1000.0) + "(s)");
+        }
+        return success;
+    }
+            
     @Override
     public boolean createDataset(String id, String name, String ownerOrg, String uriStr, Map<String, String> props ) {
         
@@ -237,6 +315,17 @@ public class CkanSyncImpl implements CkanSync {
         
         return resultProperties;
     }
+    
+    private QueryResponse dibQuery(String sourceId, Date startDate, Date endDate) throws UnsupportedQueryException, 
+                                                                                         FederationException, SourceUnavailableException {
+        String queryKeywords = syncConfig.getKeywords();
+        int maxRecordCount = syncConfig.getMaxRecordsPerPoll();
+        QueryImpl query = new QueryImpl( getFilter( startDate, endDate, queryKeywords ), 1, maxRecordCount, getSortBy(), true, 300000L );
+        QueryRequestImpl queryRequest = new QueryRequestImpl( query, Arrays.asList( new String[] { sourceId } ) );
+        queryRequest.setProperties( this.requestProperties );
+        QueryResponse response = framework.query( queryRequest );
+        return response;
+    }
 
     /**
      * 
@@ -252,93 +341,100 @@ public class CkanSyncImpl implements CkanSync {
         Date startDate = StringUtils.isBlank( syncConfig.getStartDate() ) ? null 
                                               : formatter.parseDateTime( syncConfig.getStartDate() ).toDate();
         Date endDate = new Date();
-        String queryKeywords = syncConfig.getKeywords();
         int maxRecordCount = syncConfig.getMaxRecordsPerPoll();
         int docCnt = 0;
-        long deltaTime = 0;
+
+        temporalBoundsTracker.clear();
+            
+        long beginTime = System.currentTimeMillis();
         
         try {
             final CkanPublisher ckanPublisher = connect();
             
             while ( hasMoreRecords && docCnt < ckanConfig.getMaxInput() ) {
-                long beginTime = System.currentTimeMillis();
-                QueryImpl query = new QueryImpl( getFilter( startDate, endDate, queryKeywords ), 1, maxRecordCount, getSortBy(), true, 300000L );
-                QueryRequestImpl queryRequest = new QueryRequestImpl( query, Arrays.asList( new String[] { sourceId } ) );
-                queryRequest.setProperties( this.requestProperties );
-                QueryResponse response = framework.query( queryRequest );
 
+                QueryResponse response = dibQuery(sourceId, startDate, endDate);
                 List<Result> results = response.getResults();
                 // Start date required since time series is the only way to segment results.
                 hasMoreRecords = (results.size() == maxRecordCount) && startDate != null;
                 console.printf( "Synchronizing query results for %d records from site %s\n", Integer.valueOf( results.size() ), sourceId );
                 LOGGER.debug( "Synchronizing query results for {} records from site {} in the Content Collection date range [{} - {}] and keywords[{}]",
-                               Integer.valueOf( results.size() ), sourceId, startDate, endDate, queryKeywords );
+                               Integer.valueOf( results.size() ), sourceId, startDate, endDate, syncConfig.getKeywords() );
 
                 for ( Result result : results ) {
-                    try {
-                        Metacard metacard = result.getMetacard();
-                        // Track max bounds seen as a way to ensure segmented increment through total result set possible
-                        temporalBoundsTracker.updateBounds( metacard );
-                        // Walk start date in case of a secondary query
-                        TemporalCoverageHolder timeWindowProcessed = temporalBoundsTracker.getTemporalCoverageHolder( syncConfig.getDateType() );
-                        if (timeWindowProcessed != null) {
-                          startDate = timeWindowProcessed.getEndDate();
-                        }
-                        BinaryContent binContent = geoJsonTransformer.transform( metacard, requestProperties );
-                        JSONObject jsonObject = (JSONObject) jsonParser.parse( new InputStreamReader(binContent.getInputStream()) );
-                        // See CKAN support for geo_points with http://extensions.ckan.org/extension/spatial/
-                        String wkt = metacard.getLocation();
-                        if ( StringUtils.isNotBlank( wkt ) ) {
-                           Geometry geometry = new WKTReader().read( wkt );
-                           Coordinate coord = geometry.getCentroid().getCoordinate();
-                           String center = Double.toString( coord.y ) + ',' + Double.toString( coord.x );
-                           Map<String, Object> props = (Map<String, Object>)  jsonObject.get( "properties" );
-                           props.put( "centroid", center );
-                        }
-                        //Derived resource link is preferred since it's previewable in CKAN
-                        Attribute downloadUrlAttr = metacard.getAttribute( Metacard.DERIVED_RESOURCE_DOWNLOAD_URL );
-                        if (downloadUrlAttr == null) {
-                            downloadUrlAttr = metacard.getAttribute( Metacard.RESOURCE_DOWNLOAD_URL );
-                        }
-                        URI downloadUri = downloadUrlAttr != null ? new URI(downloadUrlAttr.getValue().toString()) : null;
-                        docCnt++;
-                        if (!dryRun) {
-                          ckanPublisher.addResource( dsIdOrName, 
-                                                     metacard.getId(), 
-                                                     metacard.getTitle(),
-                                                     metacard.getCreatedDate(), 
-                                                     metacard.getResourceSize(),  
-                                                     metacard.getContentTypeName(), // but the legit product mime type still used.
-                                                     metacard.getThumbnail(),
-                                                     downloadUri,
-                                                     jsonObject);
-                        }
-                        deltaTime += System.currentTimeMillis() - beginTime;
-                        if (verbose) {
-                            console.println("Queued:" + jsonObject.toJSONString());
-                        }
-                    } catch ( Exception e ) {
-                        LOGGER.error( "Error handling result {} ", result.getMetacard().getId(), e );
-                        console.printf( "Error handling result {} with Exception {} ", result.getMetacard().getId(), e.getLocalizedMessage() );
+                    docCnt++;
+
+                    Metacard metacard = result.getMetacard();
+                    createResource(ckanPublisher, dsIdOrName, metacard);
+                    
+                    // Track max bounds seen as a way to ensure segmented increment through total result set possible
+                    temporalBoundsTracker.updateBounds( metacard );
+                    // Walk start date in case of a secondary query
+                    TemporalCoverageHolder timeWindowProcessed = temporalBoundsTracker.getTemporalCoverageHolder( syncConfig.getDateType() );
+                    if (timeWindowProcessed != null) {
+                      startDate = timeWindowProcessed.getEndDate();
                     }
                 }
             }
+
         } catch ( Throwable arg34 ) {
             LOGGER.warn( "Query failed against source {}", sourceId, arg34 );
         } finally {
+            long deltaTime = System.currentTimeMillis() - beginTime;
             LOGGER.info( "Synchronized:" + docCnt + " records in " + String.valueOf(((double) deltaTime) / 1000.0) + "(s)");
             console.println( "Synchronized:" + docCnt + " records in " + String.valueOf(((double) deltaTime) / 1000.0) + "(s)");
             resultProperties.put( "ckan.doc.queue.count",  String.valueOf( docCnt ) );
             resultProperties.put( "ckan.doc.queue.time.ms", String.valueOf( deltaTime ) );
         }
     }
+    
+    private boolean createResource(CkanPublisher ckanPublisher, String dsIdOrName, Metacard metacard) {
+        boolean success = false;
+        try {
+            BinaryContent binContent = geoJsonTransformer.transform( metacard, requestProperties );
+            JSONObject jsonObject = (JSONObject) jsonParser.parse( new InputStreamReader(binContent.getInputStream()) );
+            // See CKAN support for geo_points with http://extensions.ckan.org/extension/spatial/
+            String wkt = metacard.getLocation();
+            if ( StringUtils.isNotBlank( wkt ) ) {
+               Geometry geometry = new WKTReader().read( wkt );
+               Coordinate coord = geometry.getCentroid().getCoordinate();
+               String center = Double.toString( coord.y ) + ',' + Double.toString( coord.x );
+               Map<String, Object> props = (Map<String, Object>)  jsonObject.get( "properties" );
+               props.put( "centroid", center );
+            }
+            //Derived resource link is preferred since it's previewable in CKAN
+            Attribute downloadUrlAttr = metacard.getAttribute( Metacard.DERIVED_RESOURCE_DOWNLOAD_URL );
+            if (downloadUrlAttr == null) {
+                downloadUrlAttr = metacard.getAttribute( Metacard.RESOURCE_DOWNLOAD_URL );
+            }
+            URI downloadUri = downloadUrlAttr != null ? new URI(downloadUrlAttr.getValue().toString()) : null;
+
+            ckanPublisher.addResource( dsIdOrName, 
+                                       metacard.getId(), 
+                                       metacard.getTitle(),
+                                       metacard.getCreatedDate(), 
+                                       metacard.getResourceSize(),  
+                                       metacard.getContentTypeName(), // but the legit product mime type still used.
+                                       metacard.getThumbnail(),
+                                       downloadUri,
+                                       jsonObject);
+            success = true;
+            if (verbose) {
+                console.println("Queued:" + jsonObject.toJSONString());
+            }
+        } catch ( Exception e ) {
+            LOGGER.error( "Error handling result {} ", metacard.getId(), e );
+            console.printf( "Error handling result {} with Exception {} ", metacard.getId(), e.getLocalizedMessage() );
+        }
+        return success;
+    }
 
     protected Filter getFilter( Date startDate, Date endDate, String keywords ) {
-        LOGGER.debug( "Creating query for date type {} and date range {} through {} and keywords {}", syncConfig.getDateType(), startDate, endDate,
-                keywords );
+        LOGGER.debug( "Creating query for date type {} and date range {} through {} and keywords {}", syncConfig.getDateType(), startDate, endDate, keywords );
         Filter filter = null;
+        
         if ( startDate != null ) {
-            filter = this.filterBuilder.attribute( syncConfig.getDateType() ).during().dates( startDate, endDate );
+            filter = filterBuilder.attribute( syncConfig.getDateType() ).during().dates( startDate, endDate );
         }
         if ( StringUtils.isNotBlank( keywords ) ) {
             filter = filter == null ? filterBuilder.attribute( Metacard.ANY_TEXT ).like().text( keywords )

@@ -53,6 +53,15 @@ public class CkanDatasetCommand implements Action {
     @Option(name = "--org", description = "Specify --org=owning_org Required when creating a dataset" )
     private String organization;
     
+    @Option(name = "--split", description = "Specify --split=property to provide a custom split property" )
+    private String splitProperty;
+    
+    @Option(name = "--splitConfigured", description = "Specify --splitConfigured to use the config page specified collection prop for dataset split" )
+    private boolean splitConfigured;
+    
+    @Option(name = "--sync", description = "Specify --sync to also create resources based on the query" )
+    private boolean sync;
+    
     @Option(name = "--delete", description = "Delete the dataset")
     private boolean delete = false;
     
@@ -87,7 +96,11 @@ public class CkanDatasetCommand implements Action {
                 if ( CollectionUtils.isEmpty( ids ) ) {
                     ids = framework.getSourceIds();
                 }
-
+                
+                if (splitConfigured) {
+                    splitProperty = ckanSync.getCkanConfig().getCollectionProperty();
+                }
+               
                 ids.forEach( ( sourceId ) -> {
                     boolean result;
                     final String dsId = UUID.randomUUID().toString();
@@ -103,6 +116,9 @@ public class CkanDatasetCommand implements Action {
                         }
                         Map<String, String> props = new HashMap<>();
                         props.put("source.id", sourceId);
+                        if (splitProperty != null) {
+                            result = ckanSync.createDatasets(sourceId, splitProperty, organization, uri, props, sync);
+                        }
                         result = ckanSync.createDataset(dsId, dsName, organization, uri, props );
                     } else {
                         console.println( "You must provide an organization when creating a dataset" );

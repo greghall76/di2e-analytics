@@ -40,6 +40,10 @@
         <AD name="Max Input" id="maxInput" required="true" type="Integer" default="100"
             description="The maximum amount of record transfered on a dataset sync.">
         </AD>
+        <AD name="Collection Property" id="collectionProperty" required="false" type="String" default="isr.category"
+            description="The property to delineate unique datasets created in CKAN. If left null all records will go in a single dataset">
+        </AD>
+        http://ec2-18-218-134-90.us-east-2.compute.amazonaws.com
     </OCD>
     
     <OCD name="CDR Analytics CKAN Sync DIB Query Config" id="cdr-analytics.ckan.dib.query">

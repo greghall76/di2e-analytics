@@ -11,6 +11,9 @@ public class TemporalBoundsTracker {
   
   public TemporalBoundsTracker() { }
   
+  public void clear() {
+      coverageByType.clear();
+  }
   /**
    * Tracks all time windows types { effective, created, modified, expiration }
    * @param mCard

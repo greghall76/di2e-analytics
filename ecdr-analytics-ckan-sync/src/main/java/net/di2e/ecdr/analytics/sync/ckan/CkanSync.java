@@ -32,7 +32,28 @@ public interface CkanSync {
      * @param verbose
      */
     void setVerbose(boolean verbose);
-
+    
+    /**
+     * Following a naming convention of sourceid-$configuredSplitPropValue-dataset, creating and populate datasets for a source
+     * @param sourceId - DIB source to create datasets for
+     * @param ownerOrg - A valid organization
+     * @param uriStr - URL for the dataset
+     * @param props - searchable key/value props for the dataset
+     * @param andSync - and create resource refs
+     * @return
+     */
+    boolean createDatasets(String sourceId, String ownerOrg, String uriStr, Map<String, String> props, boolean andSync );
+    /**
+     * Following a naming convention of sourceid-$splitPropValue-dataset, creating and populate datasets for a source
+     * @param sourceId - DIB source to create datasets for
+     * @param splitProperty - This property ( like isr.category ) is a DIB metacard prop whose unique value will cause dataset splits
+     * @param ownerOrg - A valid organization
+     * @param uriStr - URL for the dataset
+     * @param props - searchable key/value props for the dataset
+     * @param andSync - and create resource refs
+     * @return
+     */
+    boolean createDatasets(String sourceId, String splitProperty,  String ownerOrg, String uriStr, Map<String, String> props, boolean andSync );
     /**
      * Creates the named dataset in CKAN
      * @param id - A unique ID for the dataset
